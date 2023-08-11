@@ -1,0 +1,36 @@
+{
+    "root": true,
+    "extends": [
+        "eslint:recommended",
+        "plugin:@typescript-eslint/recommended"
+    ],
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+        "project": [
+            "./tsconfig.json"
+        ]
+    },
+    "plugins": [
+        "@typescript-eslint"
+    ],
+    "rules": {
+        "eqeqeq": "error",
+        //"comma-dangle": "error",
+        "brace-style": "warn",
+        "keyword-spacing": [
+            "error",
+            {
+                "before": true
+            }
+        ],
+        "no-console": "off",
+        "indent": [
+            "warn",
+            "tab",
+            {
+                "SwitchCase": 1
+            }
+        ]
+    }
+    //"ignorePatterns": ["src/**/*.test.ts"]
+}
