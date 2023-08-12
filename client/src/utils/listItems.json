@@ -1,0 +1,70 @@
+[
+    {
+        "index": 1,
+        "text": "Dashboard",
+        "icon": "HomeIcon",
+        "route": "/"
+    },
+    {
+        "index": 2,
+        "text": "Profile",
+        "icon": "ManageAccountsIcon",
+        "route": "/profile"
+    },
+    {
+        "index": 3,
+        "text": "Asset",
+        "icon": "FormatListBulletedIcon",
+        "route": "/asset"
+    },
+    {
+        "index": 4,
+        "text": "Registration Management",
+        "icon": "NoteAltIcon",
+        "children": [
+            {
+                "index": 1,
+                "text": "Allocation Registration",
+                "route": "/register/assetAllocation"
+            },
+            {
+                "index": 2,
+                "text": "Error Report",
+                "route": "/register/assetReport"
+            }
+        ]
+    },
+    {
+        "index": 5,
+        "text": "Statistics",
+        "icon": "QueryStatsIcon",
+        "route": "/statistic"
+    },
+    {
+        "index": 6,
+        "text": "System Management",
+        "icon": "SettingsApplicationsIcon",
+        "children": [
+            {
+                "index": 1,
+                "text": "User Management",
+                "route": "/system/user"
+            },
+            {
+                "index": 2,
+                "text": "Category Management",
+                "route": "/system/category"
+            },
+            {
+                "index": 3,
+                "text": "Position Management",
+                "route": "/system/position"
+            },
+            {
+                "index": 4,
+                "text": "Department",
+                "route": "/system/department"
+            }
+        ]
+    }
+]

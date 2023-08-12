@@ -5,7 +5,6 @@ import route from "./routes/route";
 import { ValidationError } from "express-validation";
 import { Request, Response, NextFunction } from "express";
 import cors from "cors";
-import { httpStatus } from "./config/error";
 
 const app = express();
 app.use(cors());
@@ -24,9 +23,6 @@ app.use(function (err: Error, req: Request, res: Response, next: NextFunction) {
 	next(err);
 	if (err instanceof ValidationError) {
 		return res.status(err.statusCode).json(err);
-	}
-	if (err instanceof httpStatus) {
-		return res.status(err.status).send(err.message);
 	}
 });
 export default app;
