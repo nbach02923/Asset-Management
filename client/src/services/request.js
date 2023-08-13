@@ -1,22 +1,17 @@
 import axios from "axios";
 
-const baseURL = "http://127.0.0.1:2901/api";
+const baseURL = process.env.REACT_APP_API_ENDPOINT;
 const login = async (payload) => {
-	try {
-		const response = await axios.post(`${baseURL}/auth/login`, payload);
-		const data = await response;
-		return data;
-	} catch (err) {
-		console.error(err);
-	}
+	const response = await axios.post(`${baseURL}/auth/login`, payload);
+	const data = await response;
+	return data;
 };
-const getAPI = async (url, headers = {}, querys = {}) => {
+const getAPI = async (url, headers, querys) => {
 	try {
 		const response = await axios.get(baseURL + url, { headers: headers, params: querys });
 		const data = await response;
 		return data;
-	} catch (err) {
-		console.error(err);
-	}
+	} catch (err) {}
 };
-export { login, getAPI };
+const API = { login, getAPI };
+export default API;
