@@ -15,6 +15,10 @@ import {
 	Box,
 	Button,
 	Tooltip,
+	TablePagination,
+	Zoom,
+	Typography,
+	TableFooter,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import ContentPasteSearchIcon from "@mui/icons-material/ContentPasteSearch";
@@ -22,9 +26,6 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import SearchIcon from "@mui/icons-material/Search";
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
-import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
-import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
-import Zoom from "@mui/material/Zoom";
 
 const DataTable = ({
 	title,
@@ -32,7 +33,6 @@ const DataTable = ({
 	data,
 	handleActionOnClick,
 	filterableColumns = [],
-	sortableColumns = [],
 	columnWidths,
 	actionsColumnWidth,
 }) => {
@@ -41,8 +41,9 @@ const DataTable = ({
 	const [columnFilters, setColumnFilters] = useState({});
 	const [anchorEl, setAnchorEl] = useState(null);
 	const [selectedColumn, setSelectedColumn] = useState(null);
-	const [sortColumn, setSortColumn] = useState(null);
-	const [sortOrder, setSortOrder] = useState("asc");
+	const [page, setPage] = useState(0);
+	const [originalData, setOriginalData] = useState(data);
+	const rowsPerPage = 15;
 	const handleFilterIconClick = (event, columnName) => {
 		setAnchorEl(event.currentTarget);
 		setSelectedColumn(columnName);
@@ -83,33 +84,16 @@ const DataTable = ({
 		});
 		setFilteredData(filteredData);
 	}, [data, columnFilters]);
-	const handleSort = (columnName) => {
-		if (sortColumn === columnName) {
-			setSortOrder((prevSortOrder) => (prevSortOrder === "asc" ? "desc" : "asc"));
-		} else {
-			setSortColumn(columnName);
-			setSortOrder("asc");
-		}
-	};
 	useEffect(() => {
-		let filteredData = data;
-		if (sortColumn) {
-			filteredData = [...filteredData].sort((a, b) => {
-				if (a[sortColumn] < b[sortColumn]) {
-					return sortOrder === "asc" ? -1 : 1;
-				} else if (a[sortColumn] > b[sortColumn]) {
-					return sortOrder === "asc" ? 1 : -1;
-				} else {
-					return 0;
-				}
-			});
-		}
-		setFilteredData(filteredData);
-	}, [data, columnFilters, sortColumn, sortOrder]);
+		setOriginalData(data);
+		setFilteredData(data);
+	}, [data]);
 	return (
 		<>
 			<Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-				<h2>{title}</h2>
+				<Typography variant="h3" sx={{ marginBlock: "10px" }}>
+					{title}
+				</Typography>
 				{handleActionOnClick && handleActionOnClick.addNew && (
 					<Button
 						variant="contained"
@@ -137,17 +121,9 @@ const DataTable = ({
 				<Table>
 					<TableHead>
 						<TableRow>
+							<TableCell>No.</TableCell>
 							{headers.map((header, index) => (
 								<TableCell key={index} style={{ width: columnWidths && columnWidths[index] }}>
-									{sortableColumns.includes(header) && (
-										<IconButton onClick={() => handleSort(header)}>
-											{sortColumn === header && sortOrder === "asc" ? (
-												<ArrowUpwardIcon />
-											) : (
-												<ArrowDownwardIcon />
-											)}
-										</IconButton>
-									)}
 									{header}
 									{filterableColumns.includes(header) && (
 										<>
@@ -184,8 +160,11 @@ const DataTable = ({
 						</TableRow>
 					</TableHead>
 					<TableBody>
-						{filteredData.map((row, index) => (
+						{filteredData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => (
 							<TableRow key={index}>
+								<TableCell>
+									{originalData.findIndex((originalRow) => originalRow === row) + 1}
+								</TableCell>
 								{Object.values(row).map((value, index) => (
 									<TableCell key={index} style={{ width: columnWidths && columnWidths[index] }}>
 										{value}
@@ -219,6 +198,19 @@ const DataTable = ({
 							</TableRow>
 						))}
 					</TableBody>
+					<TableFooter>
+						<TableRow>
+							<TablePagination
+								rowsPerPageOptions={[]}
+								page={page}
+								rowsPerPage={rowsPerPage}
+								count={filteredData.length}
+								onPageChange={(event, newPage) => {
+									setPage(newPage);
+								}}
+							/>
+						</TableRow>
+					</TableFooter>
 				</Table>
 			</TableContainer>
 		</>

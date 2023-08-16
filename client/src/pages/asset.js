@@ -2,12 +2,16 @@ import React, { useState, useEffect } from "react";
 import API from "../services/request";
 import DataTable from "../components/dataTable";
 import { Container } from "@mui/material";
+import ModalComponent from "../components/modal";
 
 const Asset = () => {
 	const [data, setData] = useState([]);
 	const [tableHeader, setTableHeader] = useState([]);
+	const limit = 1000;
+	const [open, setOpen] = useState(false);
 	const handleAddNew = () => {
-		console.log("Add is clicked");
+		console.log("Add is clicked")
+		setOpen(true);
 	};
 	const handleEdit = (row) => {
 		//Edit function
@@ -21,13 +25,19 @@ const Asset = () => {
 		//Delete function
 		console.log("Delete is clicked");
 	};
+	const handleClose = () => {
+		setOpen(false);
+	};
 	useEffect(() => {
 		const headers = {
 			"Content-Type": "application/json",
 			Authorization: `Bearer ${localStorage.getItem("token")}`,
 			Accept: "application/json",
 		};
-		Promise.all([API.getAPI("/asset", headers), API.getAPI("/categoryAsset", headers)]).then(
+		const querys = {
+			limit: limit,
+		};
+		Promise.all([API.getAPI("/asset", headers, querys), API.getAPI("/categoryAsset", headers)]).then(
 			([assetResponse, categoryResponse]) => {
 				const assetData = assetResponse.data;
 				const categoryData = categoryResponse.data;
@@ -35,10 +45,9 @@ const Asset = () => {
 				categoryData.forEach((category) => {
 					categoryMap[category.id] = category.name;
 				});
-				const customHeaders = ["No.", "Asset Name", "Asset Picture", "Serial", "Category", "Status"];
+				const customHeaders = ["Asset Name", "Asset Picture", "Serial", "Category", "Status"];
 				setTableHeader(customHeaders);
-				const customData = assetData.map((item, index) => ({
-					"No.": index + 1,
+				const customData = assetData.map((item) => ({
 					"Asset Name": item.name,
 					"Asset Picture": "",
 					Serial: item.serial,
@@ -49,14 +58,13 @@ const Asset = () => {
 			}
 		);
 	}, []);
-	const columnWidths = [30, 200, 100, 80, 120, 150];
+	const columnWidths = [200, 124];
 	const actionsColumnWidth = 120;
-	const filterableColumns = ["Category", "Status"]
-	const sortableColumns = ["Asset Name", "Serial", "Category", "Status"]
+	const filterableColumns = ["Category", "Status"];
 	return (
 		<Container>
 			<DataTable
-				title="Assets"
+				title="Assets Table"
 				headers={tableHeader}
 				data={data}
 				handleActionOnClick={{
@@ -66,10 +74,10 @@ const Asset = () => {
 					delete: handleDelete,
 				}}
 				filterableColumns={filterableColumns}
-				sortableColumns={sortableColumns}
 				columnWidths={columnWidths}
 				actionsColumnWidth={actionsColumnWidth}
 			/>
+			<ModalComponent open={open} handleClose={handleClose} title={"Add New"} />
 		</Container>
 	);
 };
