@@ -40,7 +40,7 @@ const NavBar = () => {
 							sx: { backgroundColor: "white" },
 						}}
 					/>
-					<IconButton sx={{ color: "white" }}>
+					<IconButton edge="end" sx={{ color: "white", marginLeft: "12px" }}>
 						<LogoutIcon />
 					</IconButton>
 				</Toolbar>

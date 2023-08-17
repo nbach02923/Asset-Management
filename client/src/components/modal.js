@@ -1,11 +1,13 @@
-import { useState } from "react";
-import { Modal, Box, Typography, Button, CircularProgress } from "@mui/material";
+import React, { useState } from "react";
+import { Modal, Box, Typography, Button, CircularProgress, Stack } from "@mui/material";
+import Form from "./form";
 
-const ModalComponent = ({ open, handleClose, title, children }) => {
+const ModalComponent = ({ open, handleClose, title, fields = [], handleAPI }) => {
 	const [loading, setLoading] = useState(false);
 
 	const handleSave = () => {
 		setLoading(true);
+		handleAPI();
 		setTimeout(() => {
 			setLoading(false);
 			handleClose();
@@ -24,25 +26,30 @@ const ModalComponent = ({ open, handleClose, title, children }) => {
 					bgcolor: "white",
 					boxShadow: 24,
 					p: 4,
+					width: "300px",
 				}}>
 				<Typography variant="h6">{title}</Typography>
-				{children}
-				<Button
-					onClick={handleSave}
-					variant="contained"
-					color="success"
-					disabled={loading}
-					sx={{ width: "40px", marginRight: "2px" }}>
-					{loading ? <CircularProgress size={24} /> : "Save"}
-				</Button>
-				<Button
-					onClick={handleClose}
-					variant="contained"
-					color="error"
-					disabled={loading}
-					sx={{ width: "40px" }}>
-					Close
-				</Button>
+				<Stack direction="column" spacing={1}>
+					<Form fields={fields} />
+				</Stack>
+				<Stack direction="row" justifyContent="flex-end" spacing={1} sx={{ marginTop: "8px" }}>
+					<Button
+						onClick={handleSave}
+						variant="contained"
+						color="success"
+						disabled={loading}
+						sx={{ width: "40px" }}>
+						{loading ? <CircularProgress size={24} /> : "Save"}
+					</Button>
+					<Button
+						onClick={handleClose}
+						variant="contained"
+						color="error"
+						disabled={loading}
+						sx={{ width: "40px" }}>
+						Close
+					</Button>
+				</Stack>
 			</Box>
 		</Modal>
 	);

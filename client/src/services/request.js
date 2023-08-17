@@ -11,5 +11,20 @@ const getAPI = async (url, headers, querys) => {
 	const data = await response;
 	return data;
 };
-const API = { login, getAPI };
+const postAPI = async (url, headers, payload) => {
+	const response = await axios.post(baseURL + url, payload, { headers: headers });
+	const data = await response;
+	return data;
+};
+const patchAPI = async (url, headers, payload) => {
+	const response = await axios.patch(baseURL + url, payload, { headers: headers });
+	const data = await response;
+	return data;
+};
+const deleteAPI = async (url, headers) => {
+	const response = await axios.delete(baseURL + url, { headers: headers });
+	const data = await response;
+	return data;
+};
+const API = { login, getAPI, postAPI, patchAPI, deleteAPI };
 export default API;

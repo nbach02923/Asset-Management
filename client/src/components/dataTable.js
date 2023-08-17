@@ -90,33 +90,35 @@ const DataTable = ({
 	}, [data]);
 	return (
 		<>
-			<Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-				<Typography variant="h3" sx={{ marginBlock: "10px" }}>
-					{title}
-				</Typography>
+			<Typography variant="h3" sx={{ marginBlock: "10px" }}>
+				{title}
+			</Typography>
+			<Box
+				sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", justifyItems: "center" }}>
+				<TextField
+					label="Search Item"
+					value={searchTerm}
+					onChange={handleSearch}
+					sx={{ marginBottom: "5px" }}
+					size="small"
+					InputProps={{
+						startAdornment: (
+							<InputAdornment position="start">
+								<SearchIcon />
+							</InputAdornment>
+						),
+					}}
+				/>
 				{handleActionOnClick && handleActionOnClick.addNew && (
 					<Button
 						variant="contained"
 						onClick={handleActionOnClick.addNew}
-						startIcon={<AddCircleOutlineIcon />}>
+						startIcon={<AddCircleOutlineIcon />}
+						sx={{ marginBottom: "5px" }}>
 						Add New
 					</Button>
 				)}
 			</Box>
-			<TextField
-				label="Search Item"
-				value={searchTerm}
-				onChange={handleSearch}
-				sx={{ marginBottom: "5px" }}
-				size="small"
-				InputProps={{
-					startAdornment: (
-						<InputAdornment position="start">
-							<SearchIcon />
-						</InputAdornment>
-					),
-				}}
-			/>
 			<TableContainer component={Paper}>
 				<Table>
 					<TableHead>
