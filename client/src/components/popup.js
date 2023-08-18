@@ -1,9 +1,19 @@
 import React from "react";
-import { Dialog, DialogTitle, DialogContent, DialogContentText, Box, IconButton, Grow } from "@mui/material";
+import {
+	Dialog,
+	DialogTitle,
+	DialogContent,
+	DialogContentText,
+	Box,
+	IconButton,
+	Grow,
+	DialogActions,
+	Button,
+} from "@mui/material";
 import ErrorIcon from "@mui/icons-material/Error";
 import CloseIcon from "@mui/icons-material/Close";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import WarningIcon from '@mui/icons-material/Warning';
+import WarningIcon from "@mui/icons-material/Warning";
 
 const Transition = React.forwardRef(function Transition(props, ref) {
 	return <Grow ref={ref} {...props} />;
@@ -54,7 +64,7 @@ const SuccessPopup = ({ open, handleClose, message }) => {
 		</Dialog>
 	);
 };
-const WarningPopup = ({ open, handleClose, message }) => {
+const WarningPopup = ({ open, handleClose, handleOk, message }) => {
 	return (
 		<Dialog
 			open={open}
@@ -73,6 +83,14 @@ const WarningPopup = ({ open, handleClose, message }) => {
 			<DialogContent>
 				<DialogContentText sx={{ color: "white" }}>{message}</DialogContentText>
 			</DialogContent>
+			<DialogActions>
+				<Button sx={{ color: "white" }} onClick={handleOk}>
+					Ok
+				</Button>
+				<Button sx={{ color: "white" }} onClick={handleClose}>
+					No
+				</Button>
+			</DialogActions>
 		</Dialog>
 	);
 };

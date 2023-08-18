@@ -167,11 +167,16 @@ const DataTable = ({
 								<TableCell>
 									{originalData.findIndex((originalRow) => originalRow === row) + 1}
 								</TableCell>
-								{Object.values(row).map((value, index) => (
-									<TableCell key={index} style={{ width: columnWidths && columnWidths[index] }}>
-										{value}
-									</TableCell>
-								))}
+								{Object.values(row)
+									.filter(
+										(value, index) =>
+											Object.keys(row)[index] !== "id" && Object.keys(row)[index] !== "type"
+									)
+									.map((value, index) => (
+										<TableCell key={index} style={{ width: columnWidths && columnWidths[index] }}>
+											{value}
+										</TableCell>
+									))}
 								{handleActionOnClick && (
 									<TableCell style={{ width: actionsColumnWidth, textAlign: "center" }}>
 										{handleActionOnClick.edit && (

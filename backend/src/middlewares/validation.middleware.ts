@@ -45,7 +45,7 @@ const createAsset = {
 		name: Joi.string()
 			.regex(/[a-zA-Z0-9]/)
 			.required(),
-		type: Joi.string().valid("Stationary", "Nonstationary", "Other").required().allow(""),
+		type: Joi.string().valid("Stationary", "Nonstationary", "Other").required(),
 		categoryId: Joi.string().required(),
 		status: Joi.string().valid("Ready to Deploy", "Deployed", "Error").required(),
 		description: Joi.string().optional().allow(""),

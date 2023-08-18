@@ -3,7 +3,7 @@ import NavBar from "./components/navigation/NavBar/navBar";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import React from "react";
 import DashBoard from "./pages/dashBoard";
-import Asset from "./pages/asset";
+import Asset from "./pages/asset/asset";
 import Login from "./pages/login";
 import PrivateRoute from "./utils/privateRoute";
 

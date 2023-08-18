@@ -10,7 +10,13 @@ const Form = ({ fields }) => {
 						return (
 							<div key={field.label}>
 								<InputLabel id={field.label}>{field.label}</InputLabel>
-								<TextField size="small" fullWidth />
+								<TextField
+									size="small"
+									fullWidth
+									value={field.value}
+									onChange={field.onChange}
+									disabled={field.disabled}
+								/>
 							</div>
 						);
 					case "select":
@@ -22,7 +28,8 @@ const Form = ({ fields }) => {
 									size="small"
 									fullWidth
 									value={field.value || ""}
-									onChange={field.onChange}>
+									onChange={field.onChange}
+									disabled={field.disabled}>
 									{field.options.map((option) => (
 										<MenuItem key={option} value={option}>
 											{option}
@@ -35,7 +42,7 @@ const Form = ({ fields }) => {
 						return (
 							<div key={field.label}>
 								<InputLabel id={field.label}>{field.label}</InputLabel>
-								<RadioGroup>
+								<RadioGroup disabled={field.disabled}>
 									{field.values.map((value) => (
 										<FormControlLabel
 											key={value}
@@ -52,7 +59,14 @@ const Form = ({ fields }) => {
 						return (
 							<div key={field.label}>
 								<InputLabel id={field.label}>{field.label}</InputLabel>
-								<TextField size="small" fullWidth multiline />
+								<TextField
+									size="small"
+									fullWidth
+									multiline
+									value={field.value}
+									onChange={field.onChange}
+									disabled={field.disabled}
+								/>
 							</div>
 						);
 					default:
