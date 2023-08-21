@@ -62,7 +62,7 @@
             },
             {
                 "index": 4,
-                "text": "Department",
+                "text": "Department Management",
                 "route": "/system/department"
             }
         ]

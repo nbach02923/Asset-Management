@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Outlet, useNavigate } from "react-router-dom";
 import Popup from "../components/popup";
 
 const PrivateRoute = ({ children }) => {
@@ -21,6 +21,7 @@ const PrivateRoute = ({ children }) => {
 		<>
 			{children}
 			<Popup.ErrorPopup open={open} handleClose={handleClose} statusCode={status} message={message} />
+			<Outlet />
 		</>
 	);
 };

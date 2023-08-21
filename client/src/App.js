@@ -6,30 +6,26 @@ import DashBoard from "./pages/dashBoard";
 import Asset from "./pages/asset/asset";
 import Login from "./pages/login";
 import PrivateRoute from "./utils/privateRoute";
+import Category from "./pages/category/category";
+import User from "./pages/user/user";
+import Department from "./pages/department/department";
+import Position from "./pages/position/position";
 
 function App() {
 	return (
 		<Router>
 			<Routes>
 				<Route path="/login" element={<Login />} />
-				<Route
-					path="/"
-					element={
-						<PrivateRoute>
-							<NavBar />
-							<DashBoard />
-						</PrivateRoute>
-					}
-				/>
-				<Route
-					path="/asset"
-					element={
-						<PrivateRoute>
-							<NavBar />
-							<Asset />
-						</PrivateRoute>
-					}
-				/>
+				<Route path="/" element={<PrivateRoute />}>
+					<Route element={<NavBar />}>
+						<Route index element={<DashBoard />} />
+						<Route path="/asset" element={<Asset />} />
+						<Route path="/system/category" element={<Category />} />
+						<Route path="/system/user" element={<User />} />
+						<Route path="/system/department" element={<Department />} />
+						<Route path="/system/position" element={<Position />} />
+					</Route>
+				</Route>
 			</Routes>
 		</Router>
 	);

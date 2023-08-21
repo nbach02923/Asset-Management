@@ -42,7 +42,7 @@ const DataTable = ({
 	const [anchorEl, setAnchorEl] = useState(null);
 	const [selectedColumn, setSelectedColumn] = useState(null);
 	const [page, setPage] = useState(0);
-	const [originalData, setOriginalData] = useState(data);
+	const [originalData, setOriginalData] = useState(data || []);
 	const rowsPerPage = 15;
 	const handleFilterIconClick = (event, columnName) => {
 		setAnchorEl(event.currentTarget);
@@ -162,48 +162,61 @@ const DataTable = ({
 						</TableRow>
 					</TableHead>
 					<TableBody>
-						{filteredData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => (
-							<TableRow key={index}>
-								<TableCell>
-									{originalData.findIndex((originalRow) => originalRow === row) + 1}
-								</TableCell>
-								{Object.values(row)
-									.filter(
-										(value, index) =>
-											Object.keys(row)[index] !== "id" && Object.keys(row)[index] !== "type"
-									)
-									.map((value, index) => (
-										<TableCell key={index} style={{ width: columnWidths && columnWidths[index] }}>
-											{value}
+						{Array.isArray(filteredData) && filteredData.length > 0 ? (
+							filteredData
+								.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+								.map((row, index) => (
+									<TableRow key={index}>
+										<TableCell>
+											{originalData.findIndex((originalRow) => originalRow === row) + 1}
 										</TableCell>
-									))}
-								{handleActionOnClick && (
-									<TableCell style={{ width: actionsColumnWidth, textAlign: "center" }}>
-										{handleActionOnClick.edit && (
-											<Tooltip title="Edit" TransitionComponent={Zoom}>
-												<IconButton onClick={() => handleActionOnClick.edit(row)}>
-													<EditIcon />
-												</IconButton>
-											</Tooltip>
+										{Object.values(row)
+											.filter(
+												(value, index) =>
+													Object.keys(row)[index] !== "id" &&
+													Object.keys(row)[index] !== "type"
+											)
+											.map((value, index) => (
+												<TableCell
+													key={index}
+													style={{ width: columnWidths && columnWidths[index] }}>
+													{value}
+												</TableCell>
+											))}
+										{handleActionOnClick && (
+											<TableCell style={{ width: actionsColumnWidth, textAlign: "center" }}>
+												{handleActionOnClick.edit && (
+													<Tooltip title="Edit" TransitionComponent={Zoom}>
+														<IconButton onClick={() => handleActionOnClick.edit(row)}>
+															<EditIcon />
+														</IconButton>
+													</Tooltip>
+												)}
+												{handleActionOnClick.view && (
+													<Tooltip title="View" TransitionComponent={Zoom}>
+														<IconButton onClick={() => handleActionOnClick.view(row)}>
+															<ContentPasteSearchIcon />
+														</IconButton>
+													</Tooltip>
+												)}
+												{handleActionOnClick.delete && (
+													<Tooltip title="Delete" TransitionComponent={Zoom}>
+														<IconButton onClick={() => handleActionOnClick.delete(row)}>
+															<DeleteIcon />
+														</IconButton>
+													</Tooltip>
+												)}
+											</TableCell>
 										)}
-										{handleActionOnClick.view && (
-											<Tooltip title="View" TransitionComponent={Zoom}>
-												<IconButton onClick={() => handleActionOnClick.view(row)}>
-													<ContentPasteSearchIcon />
-												</IconButton>
-											</Tooltip>
-										)}
-										{handleActionOnClick.delete && (
-											<Tooltip title="Delete" TransitionComponent={Zoom}>
-												<IconButton onClick={() => handleActionOnClick.delete(row)}>
-													<DeleteIcon />
-												</IconButton>
-											</Tooltip>
-										)}
-									</TableCell>
-								)}
+									</TableRow>
+								))
+						) : (
+							<TableRow>
+								<TableCell colSpan={headers.length + 2} align="center">
+									No data to display
+								</TableCell>
 							</TableRow>
-						))}
+						)}
 					</TableBody>
 					<TableFooter>
 						<TableRow>
