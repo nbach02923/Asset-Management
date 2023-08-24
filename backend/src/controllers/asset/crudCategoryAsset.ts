@@ -9,14 +9,17 @@ async function getCategory(req: Request, res: Response, next: NextFunction) {
 				where: { id: req.query.id as string, isDeleted: false },
 			});
 			if (!existCategory) {
-				return res.status(404).json({ message: "Danh mục không tồn tại" });
+				return res.status(404).json({ message: "Category does not exist" });
 			} else {
 				category = await AppDataSource.getRepository(CategoryAsset)
 					.createQueryBuilder("category")
 					.leftJoinAndSelect("category.asset", "asset")
 					.select(["category.id as id", "category.name as name"])
 					.addSelect("COUNT(asset.id)", "assetCount")
-					.where("category.id = :id", { id: req.query.id })
+					.where("category.id = :id AND category.isDeleted = :isDeleted AND asset.isDeleted = :isDeleted", {
+						id: req.query.id,
+						isDeleted: false,
+					})
 					.groupBy("category.id")
 					.getRawOne();
 			}
@@ -26,7 +29,7 @@ async function getCategory(req: Request, res: Response, next: NextFunction) {
 				.leftJoinAndSelect("category.asset", "asset")
 				.select(["category.id as id", "category.name as name"])
 				.addSelect("COUNT(asset.id)", "assetCount")
-				.where("category.isDeleted = :isDeleted", { isDeleted: false })
+				.where("category.isDeleted = :isDeleted AND asset.isDeleted", { isDeleted: false })
 				.groupBy("category.id")
 				.getRawMany();
 		}
@@ -48,12 +51,12 @@ async function create(req: Request, res: Response, next: NextFunction) {
 			},
 		});
 		if (category) {
-			return res.status(409).json({ message: "Danh mục đã tồn tại" });
+			return res.status(409).json({ message: "Category already exist" });
 		} else {
 			const categoryAsset = await AppDataSource.getRepository(CategoryAsset).create(data);
 			const result = await AppDataSource.getRepository(CategoryAsset).save(categoryAsset);
 			return res.json({
-				message: "Thêm thành công danh mục tài sản",
+				message: "Category create successfully",
 				result,
 			});
 		}
@@ -72,20 +75,20 @@ async function update(req: Request, res: Response, next: NextFunction) {
 			where: { id: req.params.categoryId, isDeleted: false },
 		});
 		if (!categoryAssetId) {
-			return res.status(404).json({ message: "Danh mục không tồn tại" });
+			return res.status(404).json({ message: "Category does not exist" });
 		} else {
 			const categoryAssetName = await AppDataSource.getRepository(CategoryAsset).findOne({
 				where: { name: req.body.name, isDeleted: false },
 			});
 			if (categoryAssetName) {
-				return res.status(409).json({ message: "Danh mục đã tồn tại" });
+				return res.status(409).json({ message: "Category already exist" });
 			} else {
 				await AppDataSource.getRepository(CategoryAsset).update(
 					{ id: req.params.categoryId },
 					dataCatgoryAsset
 				);
 				return res.status(200).json({
-					message: "Sửa danh mục tài sản thành công",
+					message: "Update category successfully",
 				});
 			}
 		}
@@ -98,11 +101,12 @@ async function deleteCategoryAsset(req: Request, res: Response, next: NextFuncti
 	try {
 		const categoryAsset = await AppDataSource.getRepository(CategoryAsset).findOne({
 			where: {
-				id: req.params.categoryId, isDeleted: false
+				id: req.params.categoryId,
+				isDeleted: false,
 			},
 		});
 		if (!categoryAsset) {
-			return res.status(404).json({ message: "Danh mục không tồn tại" });
+			return res.status(404).json({ message: "Category does not exist" });
 		} else {
 			await AppDataSource.createQueryBuilder()
 				.update(CategoryAsset)

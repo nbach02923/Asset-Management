@@ -15,7 +15,7 @@ async function verifyToken(req: Request, res: Response, next: NextFunction) {
 		return next();
 	}
 	if (!accessToken) {
-		return res.status(401).json({ message: "Unauthorized Request" });
+		return res.status(401).json({ message: "Unauthenticated request" });
 	}
 
 	jwt.verify(accessToken, process.env.ACCESSTOKEN, function (err: jwt.JsonWebTokenError, decoded: payload) {
@@ -35,7 +35,7 @@ async function checkAdmin(req: CustomRequest, res: Response, next: NextFunction)
 	if (role === true) {
 		return next();
 	} else {
-		res.status(403).json({ message: "Tài khoản không phải Admin" });
+		res.status(403).json({ message: "Unauthorized request" });
 	}
 }
 

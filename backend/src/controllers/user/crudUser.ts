@@ -18,7 +18,7 @@ async function getUserData(req: Request, res: Response, next: NextFunction) {
 				where: { id: req.query.id as string, isDeleted: false },
 			});
 			if (!existedId) {
-				return res.status(404).json({ message: "Tài khoản không tồn tại" });
+				return res.status(404).json({ message: "User account does not exist" });
 			} else {
 				user = await AppDataSource.getRepository(UserAccount)
 					.createQueryBuilder("userAccount")
@@ -48,7 +48,7 @@ async function getUserData(req: Request, res: Response, next: NextFunction) {
 				where: { userName: req.query.name as string },
 			});
 			if (!existedName) {
-				return res.status(404).json({ message: "Tài khoản không tồn tại" });
+				return res.status(404).json({ message: "User account does not exist" });
 			} else {
 				user = await AppDataSource.getRepository(UserAccount)
 					.createQueryBuilder("userAccount")
@@ -169,7 +169,7 @@ async function create(req: Request, res: Response, next: NextFunction) {
 			},
 		});
 		if (user) {
-			return res.status(409).json({ message: "Tài khoản đã tồn tại" });
+			return res.status(409).json({ message: "User account already exist" });
 		} else {
 			const department = await AppDataSource.getRepository(Department).findOne({
 				where: {
@@ -177,7 +177,7 @@ async function create(req: Request, res: Response, next: NextFunction) {
 				},
 			});
 			if (!department) {
-				return res.status(404).json({ message: "Phòng ban không tồn tại" });
+				return res.status(404).json({ message: "Department does not exist" });
 			} else {
 				const password = "abcd1234";
 				const hashPassword = hashSync(password, 10);
@@ -197,7 +197,7 @@ async function create(req: Request, res: Response, next: NextFunction) {
 						userId: newUser.id,
 					})
 					.execute();
-				return res.status(201).send({ message: "Tài khoản được tạo thành công", result });
+				return res.status(201).send({ message: "User account create successfully", result });
 			}
 		}
 	} catch (err) {
@@ -210,7 +210,7 @@ async function updateUser(req: Request, res: Response, next: NextFunction) {
 	try {
 		const user = await AppDataSource.getRepository(UserAccount).findOne({ where: { id: req.params.id } });
 		if (!user) {
-			return res.status(404).json("Người dùng không tồn tại");
+			return res.status(404).json("User account does not exist");
 		} else {
 			const { positionCode, departmentId, fullName, phoneNumber, email, dateOfBirth } = req.body;
 			if (departmentId !== undefined) {
@@ -218,7 +218,7 @@ async function updateUser(req: Request, res: Response, next: NextFunction) {
 					where: { id: departmentId },
 				});
 				if (!existDepartment) {
-					return res.status(404).json({ message: "Phòng ban không tồn tại" });
+					return res.status(404).json({ message: "Department does not exist" });
 				} else {
 					await AppDataSource.createQueryBuilder()
 						.update(UserAccount)
@@ -232,7 +232,7 @@ async function updateUser(req: Request, res: Response, next: NextFunction) {
 					where: { code: positionCode },
 				});
 				if (!existPosition) {
-					return res.status(404).json({ message: "Vị trí công việc không tồn tại" });
+					return res.status(404).json({ message: "Work position does not exist" });
 				} else {
 					await AppDataSource.createQueryBuilder()
 						.update(UserAccount)
@@ -258,7 +258,7 @@ async function updateUser(req: Request, res: Response, next: NextFunction) {
 					.where("userId = :id", { id: req.params.id })
 					.execute();
 			}
-			return res.status(200).json({ message: "Chỉnh sửa thành công" });
+			return res.status(200).json({ message: "Update user account successfully" });
 		}
 	} catch (err) {
 		next(err);
@@ -273,7 +273,7 @@ async function deleteUser(req: Request, res: Response, next: NextFunction) {
 			where: { id: req.params.userId, isDeleted: false },
 		});
 		if (!user) {
-			return res.status(404).json({ message: "Tài khoản không tồn tại" });
+			return res.status(404).json({ message: "User account does not exist" });
 		} else {
 			await AppDataSource.createQueryBuilder()
 				.update(UserAccount)
@@ -298,18 +298,18 @@ async function changePassword(req: Request, res: Response, next: NextFunction) {
 		};
 		const checkUser = await AppDataSource.getRepository(UserAccount).findOne({ where: { id: req.params.userId } });
 		if (!checkUser) {
-			return res.status(404).json({ message: "Tài khoản không tồn tại" });
+			return res.status(404).json({ message: "User account does exist" });
 		} else {
 			const checkPassword = await compareSync(req.body.password, checkUser.password);
 			if (!checkPassword) {
-				return res.status(400).json({ message: "Sai mật khẩu" });
+				return res.status(400).json({ message: "Current account password incorrect" });
 			} else {
 				if (data.newPassword !== data.enterPassword) {
-					return res.status(400).json({ message: "Sai tài khoản" });
+					return res.status(400).json({ message: "New password and re-enter password does not match" });
 				} else {
 					const password = hashSync(data.newPassword, 10);
 					await AppDataSource.getRepository(UserAccount).update({ id: req.params.userId }, { password });
-					return res.status(200).json({ message: "Đổi mật khẩu thành công" });
+					return res.status(200).json({ message: "Password change successfully" });
 				}
 			}
 		}
