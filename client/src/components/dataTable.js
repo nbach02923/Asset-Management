@@ -173,8 +173,7 @@ const DataTable = ({
 										{Object.values(row)
 											.filter(
 												(value, index) =>
-													Object.keys(row)[index] !== "id" &&
-													Object.keys(row)[index] !== "type"
+													!["id", "type", "description"].includes(Object.keys(row)[index])
 											)
 											.map((value, index) => (
 												<TableCell

@@ -4,6 +4,7 @@ import AppDataSource from "../../../ormconfig";
 import { compareSync } from "bcrypt";
 import User from "../../entities/User_Account";
 import token from "../../middlewares/jwt.middleware";
+//todo: make the login function will have the query for remember me to change the token expire time
 async function login(req: Request, res: Response, next: NextFunction) {
 	try {
 		const user = await AppDataSource.getRepository(User).findOne({
@@ -24,10 +25,10 @@ async function login(req: Request, res: Response, next: NextFunction) {
 				);
 				return res.status(200).json({ accessToken, userRole: role, department: departmentId, userId: id });
 			} else {
-				return res.status(400).json({ message: "Sai mật khẩu" });
+				return res.status(400).json({ message: "Enter wrong password" });
 			}
 		} else {
-			return res.status(404).json({ message: "Tài khoản không tồn tại" });
+			return res.status(404).json({ message: "Account not exist" });
 		}
 	} catch (err) {
 		return next(err);

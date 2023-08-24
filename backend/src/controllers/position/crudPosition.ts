@@ -7,14 +7,14 @@ async function createPosition(req: Request, res: Response, next: NextFunction) {
 			where: { name: req.body.name, isDeleted: false },
 		});
 		if (existingPosition) {
-			return res.status(400).json({ message: "Chức vụ đã tồn tại" });
+			return res.status(409).json({ message: "Work position already exist" });
 		} else {
 			const data = {
 				name: req.body.name,
 			};
 			const position = await AppDataSource.getRepository(Position).create(data);
 			const result = await AppDataSource.getRepository(Position).save(position);
-			return res.status(201).json({ message: "Thêm mới chức vụ thành công", result });
+			return res.status(201).json({ message: "Work position create successfully", result });
 		}
 	} catch (error) {
 		return next(error);
@@ -38,7 +38,7 @@ async function deletePosition(req: Request, res: Response, next: NextFunction) {
 			},
 		});
 		if (!existingPosition) {
-			return res.status(404).json({ message: "Vị trí không tồn tại" });
+			return res.status(404).json({ message: "Work position does not exist" });
 		} else {
 			await AppDataSource.createQueryBuilder()
 				.update(Position)
@@ -62,7 +62,7 @@ async function updatePosition(req: Request, res: Response, next: NextFunction) {
 			},
 		});
 		if (!existingPosition) {
-			return res.status(404).json({ message: "Vị trí không tồn tại" });
+			return res.status(404).json({ message: "Work position does not exist" });
 		} else {
 			const data = {
 				name: req.body.name,
@@ -72,7 +72,7 @@ async function updatePosition(req: Request, res: Response, next: NextFunction) {
 				.set(data)
 				.where("code = :code", { code: req.params.positionCode })
 				.execute();
-			return res.status(200).json({ message: "Chỉnh sửa vị trí thành công" });
+			return res.status(200).json({ message: "Update work position successfully" });
 		}
 	} catch (error) {
 		return next(error);

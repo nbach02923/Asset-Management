@@ -41,7 +41,7 @@ async function getAll(req: Request, res: Response, next: NextFunction) {
 						select: ["id", "name", "type", "status", "status", "description", "serial", "categoryAssetId"],
 					});
 					if (!existingId) {
-						return res.status(404).json({ message: "Tài sản không tồn tại" });
+						return res.status(404).json({ message: "Asset does not exist" });
 					} else {
 						asset = [existingId];
 					}
@@ -53,7 +53,7 @@ async function getAll(req: Request, res: Response, next: NextFunction) {
 						select: ["id", "name", "type", "status", "status", "description", "serial", "categoryAssetId"],
 					});
 					if (!existingSerial) {
-						return res.status(404).json({ message: "Serial tài sản không tồn tại" });
+						return res.status(404).json({ message: "Asset serial does not exist" });
 					} else {
 						asset = [existingSerial];
 					}
@@ -61,13 +61,13 @@ async function getAll(req: Request, res: Response, next: NextFunction) {
 				}
 				case "name": {
 					const existingName = await AppDataSource.getRepository(Asset).find({
-						where: { name: req.query[key] as string },
+						where: { name: req.query[key] as string, isDeleted: false },
 						take: limit,
 						skip: offset,
 						select: ["id", "name", "type", "status", "status", "description", "serial", "categoryAssetId"],
 					});
 					if (!existingName) {
-						return res.status(404).json({ message: `Không có tài sản tên là ${req.query[key]}` });
+						return res.status(404).json({ message: `There is no asset with name: ${req.query[key]}` });
 					} else {
 						asset = existingName;
 					}
@@ -130,7 +130,7 @@ async function createAsset(req: Request, res: Response, next: NextFunction) {
 			serial = Math.random().toString(36).replace(".", "").toUpperCase().substring(6);
 			checkAsset = await AppDataSource.getRepository(Asset)
 				.createQueryBuilder("asset")
-				.where("asset.serial = :serial", { serial: serial })
+				.where("asset.serial = :serial AND asset.isDeleted = :isDeleted", { serial: serial, isDeleted: false })
 				.getOne();
 		} while (checkAsset);
 		const data = {
@@ -146,7 +146,7 @@ async function createAsset(req: Request, res: Response, next: NextFunction) {
 			where: { id: req.body.categoryId, isDeleted: false },
 		});
 		if (!category) {
-			return res.status(404).json({ message: "Danh mục không tồn tại" });
+			return res.status(404).json({ message: "Category does not exist" });
 		} else {
 			const asset = await AppDataSource.getRepository(Asset).create(data);
 			const result = await AppDataSource.getRepository(Asset).save(asset);
@@ -177,7 +177,7 @@ async function createAsset(req: Request, res: Response, next: NextFunction) {
 				}
 			}
 			return res.status(201).json({
-				message: "Tài sản thêm mới thành công",
+				message: "Asset is created successfully",
 				result,
 			});
 		}
@@ -201,13 +201,13 @@ async function updateAsset(req: Request, res: Response, next: NextFunction) {
 			where: { id: req.params.assetId, isDeleted: false },
 		});
 		if (!checkAsset) {
-			return res.status(404).json({ message: "Tài sản không tồn tại" });
+			return res.status(404).json({ message: "Asset does not exist" });
 		} else {
 			const category = await AppDataSource.getRepository(CategoryAsset).findOne({
 				where: { id: req.body.categoryId },
 			});
 			if (!category) {
-				return res.status(404).json({ message: "Danh mục không tồn tại" });
+				return res.status(404).json({ message: "Category does not exist" });
 			} else {
 				await AppDataSource.createQueryBuilder()
 					.update(Asset)
@@ -215,7 +215,7 @@ async function updateAsset(req: Request, res: Response, next: NextFunction) {
 					.where("id = :assetId", { assetId: req.params.assetId })
 					.execute();
 				return res.status(200).json({
-					message: "Sửa thông tin tài sản thành công",
+					message: "Update asset successfully",
 				});
 			}
 		}
@@ -230,7 +230,7 @@ async function deleteAsset(req: Request, res: Response, next: NextFunction) {
 			where: { id: req.params.assetId, isDeleted: false },
 		});
 		if (!checkAsset) {
-			return res.status(404).json({ message: "Tài sản không tồn tại" });
+			return res.status(404).json({ message: "Asset does not exist" });
 		} else {
 			await AppDataSource.createQueryBuilder()
 				.update(Asset)
@@ -256,7 +256,7 @@ async function allocationAsset(req: Request, res: Response, next: NextFunction) 
 			},
 		});
 		if (!checkdata) {
-			return res.status(404).json({ message: "Tài sản không tồn tại" });
+			return res.status(404).json({ message: "Asset does not exist" });
 		} else {
 			const assetAllocated = await AppDataSource.getRepository(Allocation).findOne({
 				where: {
@@ -265,7 +265,7 @@ async function allocationAsset(req: Request, res: Response, next: NextFunction) 
 				},
 			});
 			if (assetAllocated) {
-				return res.status(409).json({ message: "Tài sản đã cho mượn" });
+				return res.status(409).json({ message: "Asset is already allocated" });
 			} else {
 				const checkInformation = await AppDataSource.getRepository(UserInformation)
 					.createQueryBuilder("userInformation")
@@ -273,7 +273,9 @@ async function allocationAsset(req: Request, res: Response, next: NextFunction) 
 					.where("user.id = :id AND user.isDeleted = :isDeleted", { id: req.body.userId, isDeleted: false })
 					.getOne();
 				if (!checkInformation.fullName || !checkInformation.email) {
-					return res.status(406).json({ message: "Tài khoản người dùng không đủ điều kiện đăng ký tài sản" });
+					return res
+						.status(406)
+						.json({ message: "User account does not meet the requirement to send request" });
 				} else {
 					const data = {
 						assetId: req.params.assetId,
@@ -286,7 +288,7 @@ async function allocationAsset(req: Request, res: Response, next: NextFunction) 
 					const allocation = await AppDataSource.getRepository(Allocation).create(data);
 					const result = await AppDataSource.getRepository(Allocation).save(allocation);
 					return res.status(201).json({
-						message: "Gửi đề nghị cấp phát thành công",
+						message: "Request sent successfully",
 						result,
 					});
 				}
@@ -306,7 +308,7 @@ async function verifyAllocation(req: Request, res: Response, next: NextFunction)
 			},
 		});
 		if (!allocation) {
-			return res.status(404).json({ message: "Request không tồn tại" });
+			return res.status(404).json({ message: "Request does not exist" });
 		} else {
 			if (allocation.allocationStatus === "Pending") {
 				const verify = req.body.status;
@@ -342,7 +344,7 @@ async function verifyAllocation(req: Request, res: Response, next: NextFunction)
 							)
 							.execute();
 						// todo: Send email to the corresponding user who want to borrow asset
-						return res.status(200).json({ message: "Cho mượn thành công" });
+						return res.status(200).json({ message: "Accepted request successfully" });
 					}
 					case "Rejected": {
 						await AppDataSource.createQueryBuilder()
@@ -353,11 +355,11 @@ async function verifyAllocation(req: Request, res: Response, next: NextFunction)
 							.where("id = :id", { id: req.params.requestId })
 							.execute();
 						// ? Do I also need to send email to user when they get allocation request reject
-						return res.status(200).json({ message: "Từ chối thành công" });
+						return res.status(200).json({ message: "Reject request susccesfully" });
 					}
 				}
 			} else {
-				return res.status(422).json({ message: "Trạng thái tài sản không thể cho mượn" });
+				return res.status(422).json({ message: "Asset can not be allcated" });
 			}
 		}
 	} catch (err) {
@@ -372,7 +374,7 @@ async function returnAsset(req: Request, res: Response, next: NextFunction) {
 			where: { id: req.params.requestId },
 		});
 		if (!checkRequest) {
-			return res.status(404).json({ message: "Request không tồn tại" });
+			return res.status(404).json({ message: "Request does not exist" });
 		} else {
 			const checkAsset = await AppDataSource.getRepository(Asset).findOne({
 				where: { id: checkRequest.assetId },
@@ -386,9 +388,9 @@ async function returnAsset(req: Request, res: Response, next: NextFunction) {
 					.where("id = :id", { id: req.params.requestId })
 					.execute();
 				// todo: Send email to admin in order for them to know and approved the return of the allocation
-				return res.status(200).json({ message: "Yêu cầu được hoàn trả thành công" });
+				return res.status(200).json({ message: "Request to return asset successfully" });
 			} else {
-				return res.status(422).json({ message: "Trạng thái tài sản không thể hoàn trả" });
+				return res.status(422).json({ message: "Asset can not be return" });
 			}
 		}
 	} catch (err) {
@@ -403,7 +405,7 @@ async function verifyReturn(req: Request, res: Response, next: NextFunction) {
 		});
 		console.log(existingRequest);
 		if (!existingRequest) {
-			return res.status(404).json({ message: "Request không tồn tại" });
+			return res.status(404).json({ message: "Request does not exist" });
 		} else {
 			if (existingRequest.allocationStatus === "Waiting to Approve") {
 				await AppDataSource.createQueryBuilder()
@@ -421,11 +423,11 @@ async function verifyReturn(req: Request, res: Response, next: NextFunction) {
 					.where("id = :id", { id: existingRequest.assetId })
 					.execute();
 				// todo: Send email to user to notify that their return request is approved by admin
-				return res.status(200).json({ message: "Xác nhận hoàn trả thành công" });
+				return res.status(200).json({ message: "Approve return asset successfully" });
 			} else {
 				return res
 					.status(422)
-					.json({ message: "Tài sản đã được hoàn trả hoặc chưa nhận được đơn yêu cầu hoàn trả" });
+					.json({ message: "Asset is already returned or does not receive return request" });
 			}
 		}
 	} catch (err) {
@@ -469,9 +471,9 @@ async function errorAsset(req: Request, res: Response, next: NextFunction) {
 			const errorForm = await AppDataSource.getRepository(ErrorAsset).create(data);
 			const result = await AppDataSource.getRepository(ErrorAsset).save(errorForm);
 			// todo: send email to admin to notify there is an asset get an error or issue
-			return res.status(201).json({ messsage: "Tạo thông báo lỗi thành công", result });
+			return res.status(201).json({ messsage: "Report error successfully", result });
 		} else {
-			return res.status(404).json({ message: "Tài sản không tồn tại" });
+			return res.status(404).json({ message: "Asset does not exist" });
 		}
 	} catch (err) {
 		return next(err);
@@ -484,10 +486,10 @@ async function verifyReport(req: Request, res: Response, next: NextFunction) {
 			where: { id: req.params.requestId },
 		});
 		if (!existingRequest) {
-			return res.status(404).json({ message: "Request không tồn tại" });
+			return res.status(404).json({ message: "Report does not exist" });
 		} else {
 			if (existingRequest.status !== "Waiting to Approve") {
-				return res.status(422).json({ message: "Trạng thái request đã được duyệt hoặc đã sửa" });
+				return res.status(422).json({ message: "Report is already fixed or approved" });
 			} else {
 				if (req.body.status === "Approved") {
 					await AppDataSource.createQueryBuilder()
@@ -524,7 +526,7 @@ async function verifyReport(req: Request, res: Response, next: NextFunction) {
 							allocationStatus: "Pending",
 						})
 						.execute();
-					return res.status(200).json({ message: "Xác nhận lỗi thành công" });
+					return res.status(200).json({ message: "Error approve successfully" });
 					// todo: send email to user to notify that admin has receive the mail and approve that it is an error or issue
 				} else if (req.body.status === "Disapproved") {
 					await AppDataSource.createQueryBuilder()
@@ -534,7 +536,7 @@ async function verifyReport(req: Request, res: Response, next: NextFunction) {
 						})
 						.where("id = :id", { id: req.params.requestId })
 						.execute();
-					return res.status(200).json({ message: "Xác nhận không phải lỗi thành công" });
+					return res.status(200).json({ message: "Error disapproved" });
 				}
 			}
 		}
@@ -547,7 +549,7 @@ async function fixError(req: Request, res: Response, next: NextFunction) {
 	try {
 		const checkError = await AppDataSource.getRepository(ErrorAsset).findOne({ where: { id: req.params.errorId } });
 		if (!checkError) {
-			return res.status(404).json({ message: "Lỗi không có bản ghi trong cơ sở dữ liệu" });
+			return res.status(404).json({ message: "Error report does not exist" });
 		} else {
 			if (checkError.status === "Approved") {
 				await AppDataSource.createQueryBuilder()
@@ -564,9 +566,9 @@ async function fixError(req: Request, res: Response, next: NextFunction) {
 					})
 					.where("id = :id", { id: checkError.assetId })
 					.execute();
-				return res.status(200).json({ message: "Xác nhận sửa lỗi thành công" });
+				return res.status(200).json({ message: "Error fixed successfully" });
 			} else {
-				return res.status(422).json({ message: "Lỗi đã được sửa hoặc không được chấp thuận" });
+				return res.status(422).json({ message: "Error is already fixed or disapproved or not yet approved" });
 			}
 		}
 	} catch (err) {

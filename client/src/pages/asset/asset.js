@@ -20,7 +20,6 @@ const Asset = () => {
 		handleAPI,
 		showWarning,
 		setShowWarning,
-		handleDeleteConfirm,
 		showSuccess,
 		setShowSuccess,
 		showError,
@@ -57,7 +56,7 @@ const Asset = () => {
 			<Popup.WarningPopup
 				open={showWarning}
 				handleClose={() => setShowWarning(false)}
-				handleOk={handleDeleteConfirm}
+				handleOk={handleAPI}
 				message="Are you sure to delete this asset?"
 			/>
 			<Popup.ErrorPopup
@@ -74,5 +73,4 @@ const Asset = () => {
 		</Container>
 	);
 };
-
 export default Asset;

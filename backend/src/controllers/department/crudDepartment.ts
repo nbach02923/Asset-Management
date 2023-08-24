@@ -12,7 +12,7 @@ async function getAll(req: Request, res: Response, next: NextFunction) {
 				where: { id: req.query.id as string, isDeleted: false },
 			});
 			if (!checkDepartment) {
-				return res.status(404).json({ message: "Phòng ban không tồn tại" });
+				return res.status(404).json({ message: "Department does not exist" });
 			} else {
 				department = await AppDataSource.getRepository(Department)
 					.createQueryBuilder("department")
@@ -50,7 +50,7 @@ async function createDepartment(req: Request, res: Response, next: NextFunction)
 			where: { name: req.body.name, isDeleted: false },
 		});
 		if (department) {
-			return res.status(409).json({ message: "Phòng ban đã tồn tại" });
+			return res.status(409).json({ message: "Department already exist" });
 		} else {
 			const departmentNew = await AppDataSource.getRepository(Department).create(data);
 			const result = await AppDataSource.getRepository(Department).save(departmentNew);
@@ -67,13 +67,13 @@ async function updateDepartment(req: Request, res: Response, next: NextFunction)
 			where: { id: req.params.departmentId, isDeleted: false },
 		});
 		if (!department) {
-			return res.status(404).json({ message: "Phòng ban không tồn tại" });
+			return res.status(404).json({ message: "Department does not exist" });
 		} else {
 			const departmentName = await AppDataSource.getRepository(Department).findOne({
 				where: { name: req.body.name },
 			});
 			if (departmentName) {
-				return res.status(409).json({ message: "Phòng ban đã tồn tại" });
+				return res.status(409).json({ message: "Department already exist" });
 			} else {
 				const data = {
 					name: req.body.name,
@@ -83,7 +83,7 @@ async function updateDepartment(req: Request, res: Response, next: NextFunction)
 					.set(data)
 					.where("id = :id", { id: req.params.departmentId })
 					.execute();
-				return res.status(200).json({ message: "Chỉnh sửa phòng ban thành công" });
+				return res.status(200).json({ message: "Update department succesfully" });
 			}
 		}
 	} catch (err) {
@@ -97,7 +97,7 @@ async function deleteDepartment(req: Request, res: Response, next: NextFunction)
 			where: { id: req.params.departmentId, isDeleted: false },
 		});
 		if (!department) {
-			return res.status(404).json({ message: "Phòng ban không tồn tại" });
+			return res.status(404).json({ message: "Department does not exist" });
 		} else {
 			await AppDataSource.createQueryBuilder()
 				.update(Department)

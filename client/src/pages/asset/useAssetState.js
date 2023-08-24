@@ -17,10 +17,9 @@ export default function useAssetState() {
 	const [currentAction, setCurrentAction] = useState(null);
 	const [selectedId, setSelectedId] = useState(null);
 	const [showWarning, setShowWarning] = useState(false);
-	const [assetToDelete, setAssetToDelete] = useState(null);
 	const [showSuccess, setShowSuccess] = useState(false);
 	const [showError, setShowError] = useState(false);
-	const [errorMessage, setErrorMessage] = useState("");
+	const [responseMessage, setResponseMessage] = useState("");
 	const [errorStatusCode, setErrorStatusCode] = useState(null);
 	const headers = useMemo(() => {
 		return {
@@ -53,6 +52,7 @@ export default function useAssetState() {
 						type: item.type,
 						category: categoryMap[item.categoryAssetId],
 						status: item.status,
+						description: item.description,
 					};
 				});
 				setData(customData);
@@ -99,13 +99,15 @@ export default function useAssetState() {
 				setSelectedCategoryId
 			),
 			createSelectField("Status", ["Ready to Deploy", "Deployed", "Error"], selectedStatus, setSelectedStatus),
-			createField("Decription", "textarea", selectedDescription, setSelectedDescription),
+			createField("Description", "textarea", selectedDescription, setSelectedDescription),
 		]);
 		setOpen(true);
 		setTitle("Add New Asset");
 		setCurrentAction("addNew");
 	};
 	const handleEdit = (row) => {
+		const selectedCategory = category.find((item) => item.name === row.category);
+		setSelectedCategoryId(selectedCategory.id);
 		setSelectedId(row.id);
 		setSelectedName(row.name);
 		setSelectedType(row.type);
@@ -122,7 +124,7 @@ export default function useAssetState() {
 				category,
 				setSelectedCategoryId
 			),
-			createField("Decription", "textarea", row.description, setSelectedDescription),
+			createField("Description", "textarea", row.description, setSelectedDescription),
 		]);
 		setOpen(true);
 		setTitle("Edit Asset");
@@ -165,31 +167,15 @@ export default function useAssetState() {
 				null,
 				true
 			),
-			createField("Decription", "textarea", row.description, setSelectedDescription, true),
+			createField("Description", "textarea", row.description, setSelectedDescription, true),
 		]);
 		setOpen(true);
 		setTitle("View Asset");
 	};
 	const handleDelete = (row) => {
-		setAssetToDelete(row);
+		setSelectedId(row.id);
+		setCurrentAction("delete");
 		setShowWarning(true);
-	};
-	const handleDeleteConfirm = () => {
-		API.deleteAPI(`/asset/${assetToDelete.id}`, headers)
-			.then(() => {
-				setData((prevData) => prevData.filter((item) => item.id !== assetToDelete.id));
-				setShowWarning(false);
-				setAssetToDelete(null);
-				setShowSuccess(true);
-			})
-			.catch((err) => {
-				console.error(err);
-				setShowWarning(false);
-				setAssetToDelete(null);
-				setErrorStatusCode(err.response.status);
-				setErrorMessage(err.message);
-				setShowError(true);
-			});
 	};
 	const handleClose = () => {
 		setOpen(false);
@@ -212,13 +198,13 @@ export default function useAssetState() {
 						reject(err);
 					});
 			} else if (currentAction === "edit") {
-				console.log("Save Edit");
 				const payload = {
 					name: selectedName,
 					type: selectedType,
 					categoryId: selectedCategoryId,
 					description: selectedDescription,
 				};
+				console.log(payload);
 				API.patchAPI(`/asset/${selectedId}`, headers, payload)
 					.then((response) => {
 						resolve(response.data);
@@ -227,8 +213,19 @@ export default function useAssetState() {
 						reject(err);
 					});
 			} else if (currentAction === "delete") {
-				console.log("Save Delete");
-				resolve();
+				setShowWarning(false);
+				API.deleteAPI(`/asset/${selectedId}`, headers)
+					.then((response) => {
+						resolve(response.data);
+						setShowSuccess(true);
+						setResponseMessage("Delete Succesfully");
+					})
+					.catch((err) => {
+						setShowError(true);
+						setErrorStatusCode(err.response.status);
+						setResponseMessage(err.response.data.details.body[0].message);
+						reject(err);
+					});
 			}
 		});
 	};
@@ -246,11 +243,10 @@ export default function useAssetState() {
 		handleAPI,
 		showWarning,
 		setShowWarning,
-		handleDeleteConfirm,
 		showError,
 		setShowError,
 		errorStatusCode,
-		errorMessage,
+		responseMessage,
 		showSuccess,
 		setShowSuccess,
 		currentAction,
