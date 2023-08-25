@@ -1,8 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
-import API from "../../services/request";
-export default function usePositionState() {
+export function useDepartmentState() {
 	const [data, setData] = useState([]);
-	const [tableHeader, setTableHeader] = useState([]);
+	const [tableHeaders, setTableHeaders] = useState([]);
 	const headers = useMemo(() => {
 		return {
 			"Content-Type": "application/json",
@@ -14,18 +13,18 @@ export default function usePositionState() {
 		const querys = {
 			limit: 1000,
 		};
-		API.getAPI("/position", headers, querys).then((response) => {
-			const position = response.data;
-			const customHeaders = ["Position Name"];
-			setTableHeader(customHeaders);
-			const customData = position.map((item) => {
+		API.getAPI("/department", headers, querys).then((response) => {
+			const department = response.data;
+			const customHeaders = ["Department Name"];
+			setTableHeaders(customHeaders);
+			const customData = department.map((item) => {
 				return {
-					code: item.code,
+					id: item.id,
 					name: item.name,
 				};
 			});
 			setData(customData);
 		});
 	}, [headers]);
-	return { data, tableHeader };
+	return { data, tableHeaders };
 }

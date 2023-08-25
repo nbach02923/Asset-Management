@@ -26,14 +26,12 @@ export default function useCategoryState() {
 		setOpen(false);
 	};
 	const handleAddNew = () => {
-		console.log("Add new clicked");
 		setFields([createField("Name", "text", selectedName, setSelectedName)]);
 		setOpen(true);
 		setTitle("Add New Category");
 		setCurrentAction("addNew");
 	};
 	const handleEdit = (row) => {
-		console.log("Edit clicked");
 		setSelectedId(row.id);
 		setSelectedName(row.name);
 		setFields([createField("Name", "text", row.name, setSelectedName)]);
@@ -42,7 +40,6 @@ export default function useCategoryState() {
 		setCurrentAction("edit");
 	};
 	const handleDelete = (row) => {
-		console.log("Delete clicked");
 		setCurrentAction("delete");
 	};
 	const handleAPI = () => {
@@ -102,7 +99,6 @@ export default function useCategoryState() {
 		};
 		API.getAPI("/categoryAsset", headers, querys).then((response) => {
 			const category = response.data;
-			console.log(category);
 			const customHeaders = ["Category Name", "Asset Quantity"];
 			setTableHeader(customHeaders);
 			const customData = category.map((item) => {
@@ -113,7 +109,6 @@ export default function useCategoryState() {
 				};
 			});
 			setData(customData);
-			console.log(customData);
 		});
 	}, [headers]);
 	return {

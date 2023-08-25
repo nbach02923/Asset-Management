@@ -32,7 +32,7 @@ export default function useAssetState() {
 		const querys = {
 			limit: 1000,
 		};
-		Promise.all([API.getAPI("/asset", headers, querys), API.getAPI("/categoryAsset", headers)]).then(
+		Promise.all([API.getAPI("/asset", headers, querys), API.getAPI("/categoryAsset", headers, querys)]).then(
 			([assetResponse, categoryResponse]) => {
 				const assetData = assetResponse.data;
 				const categoryData = categoryResponse.data;
