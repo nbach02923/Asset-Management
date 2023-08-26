@@ -21,6 +21,7 @@ export default function useAssetState() {
 	const [showError, setShowError] = useState(false);
 	const [responseMessage, setResponseMessage] = useState("");
 	const [errorStatusCode, setErrorStatusCode] = useState(null);
+	const [updateData, setUpdateData] = useState(false);
 	const headers = useMemo(() => {
 		return {
 			"Content-Type": "application/json",
@@ -58,7 +59,7 @@ export default function useAssetState() {
 				setData(customData);
 			}
 		);
-	}, [headers]);
+	}, [headers, updateData]);
 	useEffect(() => {
 		if (!open) {
 			setSelectedName("");
@@ -193,6 +194,7 @@ export default function useAssetState() {
 				API.postAPI("/asset", headers, payload)
 					.then((response) => {
 						resolve(response.data);
+						setUpdateData((prev) => !prev);
 					})
 					.catch((err) => {
 						reject(err);
@@ -208,6 +210,7 @@ export default function useAssetState() {
 				API.patchAPI(`/asset/${selectedId}`, headers, payload)
 					.then((response) => {
 						resolve(response.data);
+						setUpdateData((prev) => !prev);
 					})
 					.catch((err) => {
 						reject(err);
@@ -217,13 +220,18 @@ export default function useAssetState() {
 				API.deleteAPI(`/asset/${selectedId}`, headers)
 					.then((response) => {
 						resolve(response.data);
+						setUpdateData((prev) => !prev);
 						setShowSuccess(true);
 						setResponseMessage("Delete Succesfully");
 					})
 					.catch((err) => {
 						setShowError(true);
 						setErrorStatusCode(err.response.status);
-						setResponseMessage(err.response.data.details.body[0].message);
+						if (err.response.data.details) {
+							setResponseMessage(err.response.data.details.body[0].message);
+						} else {
+							setResponseMessage(err.response.data.message);
+						}
 						reject(err);
 					});
 			}

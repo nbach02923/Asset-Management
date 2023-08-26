@@ -42,7 +42,7 @@ const Category = () => {
 			<Popup.WarningPopup
 				open={showWarning}
 				handleClose={() => setShowWarning(false)}
-				handleOk={{}}
+				handleOk={handleAPI}
 				message="Are you sure to delete this asset?"
 			/>
 			<Popup.ErrorPopup

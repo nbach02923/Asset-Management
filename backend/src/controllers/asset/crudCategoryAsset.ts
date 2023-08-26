@@ -16,7 +16,7 @@ async function getCategory(req: Request, res: Response, next: NextFunction) {
 					.leftJoinAndSelect("category.asset", "asset")
 					.select(["category.id as id", "category.name as name"])
 					.addSelect("COUNT(asset.id)", "assetCount")
-					.where("category.id = :id AND category.isDeleted = :isDeleted AND asset.isDeleted = :isDeleted", {
+					.where("category.id = :id AND category.isDeleted = :isDeleted", {
 						id: req.query.id,
 						isDeleted: false,
 					})
@@ -26,10 +26,10 @@ async function getCategory(req: Request, res: Response, next: NextFunction) {
 		} else {
 			category = await AppDataSource.getRepository(CategoryAsset)
 				.createQueryBuilder("category")
-				.leftJoinAndSelect("category.asset", "asset")
+				.leftJoinAndSelect("category.asset", "asset", "asset.isDeleted = :isDeleted", { isDeleted: false })
 				.select(["category.id as id", "category.name as name"])
 				.addSelect("COUNT(asset.id)", "assetCount")
-				.where("category.isDeleted = :isDeleted AND asset.isDeleted", { isDeleted: false })
+				.where("category.isDeleted = :isDeleted", { isDeleted: false })
 				.groupBy("category.id")
 				.getRawMany();
 		}

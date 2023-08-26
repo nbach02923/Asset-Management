@@ -70,7 +70,7 @@ async function updateDepartment(req: Request, res: Response, next: NextFunction)
 			return res.status(404).json({ message: "Department does not exist" });
 		} else {
 			const departmentName = await AppDataSource.getRepository(Department).findOne({
-				where: { name: req.body.name },
+				where: { name: req.body.name, isDeleted: false },
 			});
 			if (departmentName) {
 				return res.status(409).json({ message: "Department already exist" });

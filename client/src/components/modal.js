@@ -25,12 +25,16 @@ const ModalComponent = ({ open, handleClose, title, fields = [], handleAPI, isVi
 					setTimeout(() => {
 						setLoading(false);
 						handleClose();
-					}, 4000);
+					}, 1000);
 				})
 				.catch((err) => {
 					setLoading(false);
 					setStatusCode(err.response.status);
-					setResponseMessage(err.response.data.details.body[0].message);
+					if (err.response.data.details) {
+						setResponseMessage(err.response.data.details.body[0].message);
+					} else {
+						setResponseMessage(err.response.data.message);
+					}
 					setErrorOpen(true);
 				});
 		} else {

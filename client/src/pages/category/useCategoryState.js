@@ -15,6 +15,7 @@ export default function useCategoryState() {
 	const [showWarning, setShowWarning] = useState(false);
 	const [responseMessage, setResponseMessage] = useState("");
 	const [errorStatusCode, setErrorStatusCode] = useState(null);
+	const [updateData, setUpdateData] = useState(false);
 	const headers = useMemo(() => {
 		return {
 			"Content-Type": "application/json",
@@ -41,6 +42,8 @@ export default function useCategoryState() {
 	};
 	const handleDelete = (row) => {
 		setCurrentAction("delete");
+		setSelectedId(row.id);
+		setShowWarning(true);
 	};
 	const handleAPI = () => {
 		return new Promise((resolve, reject) => {
@@ -51,6 +54,7 @@ export default function useCategoryState() {
 				API.postAPI("/categoryAsset", headers, payload)
 					.then((response) => {
 						resolve(response.data);
+						setUpdateData((prev) => !prev);
 					})
 					.catch((err) => {
 						reject(err);
@@ -62,14 +66,17 @@ export default function useCategoryState() {
 				API.patchAPI(`/categoryAsset/${selectedId}`, headers, payload)
 					.then((response) => {
 						resolve(response.data);
+						setUpdateData((prev) => !prev);
 					})
 					.catch((err) => {
 						reject(err);
 					});
 			} else if (currentAction === "delete") {
+				setShowWarning(false);
 				API.deleteAPI(`/categoryAsset/${selectedId}`, headers)
 					.then((response) => {
 						resolve(response.data);
+						setUpdateData((prev) => !prev);
 						setShowSuccess(true);
 						setResponseMessage("Delete successfully");
 					})
@@ -77,7 +84,11 @@ export default function useCategoryState() {
 						reject(err);
 						setShowError(true);
 						setErrorStatusCode(err.response.status);
-						setResponseMessage(err.response.data.details.body[0].message);
+						if (err.response.data.details) {
+							setResponseMessage(err.response.data.details.body[0].message);
+						} else {
+							setResponseMessage(err.response.data.message);
+						}
 					});
 			}
 		});
@@ -110,7 +121,7 @@ export default function useCategoryState() {
 			});
 			setData(customData);
 		});
-	}, [headers]);
+	}, [headers, updateData]);
 	return {
 		data,
 		tableHeader,

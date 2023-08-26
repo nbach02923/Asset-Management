@@ -1,7 +1,19 @@
-import React from "react";
+import React, { useState } from "react";
 import { InputLabel, TextField, Select, MenuItem, RadioGroup, FormControlLabel, Radio } from "@mui/material";
 
 const Form = ({ fields }) => {
+	const [values, setValues] = useState(
+		fields.reduce((acc, field) => {
+			acc[field.label] = field.value;
+			return acc;
+		}, {})
+	);
+	const handleChange = (label, value) => {
+		setValues((prevValues) => ({
+			...prevValues,
+			[label]: value,
+		}));
+	};
 	return (
 		<form>
 			{fields.map((field) => {
@@ -13,8 +25,11 @@ const Form = ({ fields }) => {
 								<TextField
 									size="small"
 									fullWidth
-									value={field.value}
-									onChange={field.onChange}
+									value={values[field.label]}
+									onChange={(event) => {
+										handleChange(field.label, event.target.value);
+										field.onChange(event);
+									}}
 									disabled={field.disabled}
 								/>
 							</div>
@@ -27,8 +42,11 @@ const Form = ({ fields }) => {
 									labelId={field.label}
 									size="small"
 									fullWidth
-									value={field.value || ""}
-									onChange={field.onChange}
+									value={values[field.label] || ""}
+									onChange={(event) => {
+										handleChange(field.label, event.target.value);
+										field.onChange(event);
+									}}
 									disabled={field.disabled}>
 									{field.options.map((option) => (
 										<MenuItem key={option} value={option}>
@@ -63,8 +81,11 @@ const Form = ({ fields }) => {
 									size="small"
 									fullWidth
 									multiline
-									value={field.value}
-									onChange={field.onChange}
+									value={values[field.label]}
+									onChange={(event) => {
+										handleChange(field.label, event.target.value);
+										field.onChange(event);
+									}}
 									disabled={field.disabled}
 								/>
 							</div>

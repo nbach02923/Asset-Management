@@ -35,18 +35,17 @@ const SideBar = ({ open, setOpen }) => {
 	return (
 		<Drawer open={open} onClose={handleClose} PaperProps={{ sx: { bgcolor: "#010d8a" } }}>
 			<Box sx={{ display: "flex", justifyContent: "space-between", p: 2, alignItems: "center" }}>
-				<Box>
-					<img src={logo} width="100px" alt="logo" />
-				</Box>
 				<IconButton onClick={handleClose}>
 					<CloseIcon sx={{ color: "white", float: "right" }} />
 				</IconButton>
+				<Box>
+					<img src={logo} width="100px" alt="logo" />
+				</Box>
 			</Box>
 			<List>
 				{listItems.map((item) => (
-					<>
+					<React.Fragment key={item.index}>
 						<ListItemButton
-							key={item.index}
 							component={Link}
 							to={item.route}
 							onClick={() => {
@@ -55,7 +54,9 @@ const SideBar = ({ open, setOpen }) => {
 									handleClose();
 								}
 							}}>
-							<ListItemIcon sx={{ color: "white", marginRight: "-16px" }}>{icons[item.icon]}</ListItemIcon>
+							<ListItemIcon sx={{ color: "white", marginRight: "-16px" }}>
+								{icons[item.icon]}
+							</ListItemIcon>
 							<ListItemText primary={item.text} sx={{ color: "white" }} />
 							{item.children ? (
 								openItems[item.text] ? (
@@ -80,7 +81,7 @@ const SideBar = ({ open, setOpen }) => {
 								</List>
 							</Collapse>
 						)}
-					</>
+					</React.Fragment>
 				))}
 			</List>
 		</Drawer>
