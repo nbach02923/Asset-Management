@@ -41,7 +41,6 @@ const Asset = () => {
 					view: handleView,
 					delete: handleDelete,
 				}}
-				filterableColumns={["Category", "Status"]}
 				columnWidths={[200, 124]}
 				actionsColumnWidth={120}
 			/>

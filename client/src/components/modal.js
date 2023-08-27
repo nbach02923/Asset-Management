@@ -21,7 +21,7 @@ const ModalComponent = ({ open, handleClose, title, fields = [], handleAPI, isVi
 			handleAPI()
 				.then((response) => {
 					setSuccessOpen(true);
-					setResponseMessage(response.message);
+					setResponseMessage(response.data.message);
 					setTimeout(() => {
 						setLoading(false);
 						handleClose();
@@ -43,21 +43,22 @@ const ModalComponent = ({ open, handleClose, title, fields = [], handleAPI, isVi
 	};
 	return (
 		<>
-			<Modal open={open} onClose={handleClose}>
+			<Modal
+				open={open}
+				onClose={handleClose}
+				sx={{ overflow: "hidden", display: "flex", justifyContent: "center", alignItems: "center" }}>
 				<Box
 					sx={{
 						borderRadius: 2,
-						position: "absolute",
-						top: "50%",
-						left: "50%",
-						transform: "translate(-50%, -50%)",
 						bgcolor: "white",
 						boxShadow: 24,
 						p: 4,
 						width: "300px",
+						maxHeight: "calc(100vh - 64px)",
+						overflow: "auto",
 					}}>
 					<Typography variant="h6">{title}</Typography>
-					<Stack direction="column" spacing={1}>
+					<Stack direction="column" spacing={1} x={{ overflow: "hidden" }}>
 						<Form fields={fields} />
 					</Stack>
 					<Stack direction="row" justifyContent="flex-end" spacing={1} sx={{ marginTop: "8px" }}>

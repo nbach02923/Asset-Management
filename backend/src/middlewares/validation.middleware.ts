@@ -30,8 +30,8 @@ const createUser = {
 			"string.empty": "Department should not be empty",
 			"any.required": "Department is required",
 		}),
-		positionCode: Joi.string().required().messages({
-			"string.empty:": "Position should not be empty",
+		positionCode: Joi.number().required().messages({
+			"number.empty:": "Position should not be empty",
 			"any.required": "Position is required",
 		}),
 	}),
@@ -40,7 +40,7 @@ const createUser = {
 const updateUser = {
 	body: Joi.object({
 		departmentId: Joi.string().optional(),
-		positionCode: Joi.string().optional(),
+		positionCode: Joi.number().optional(),
 		fullName: Joi.string().min(3).optional().messages({
 			"string.min": "Full name should be at least 3 characters long",
 		}),

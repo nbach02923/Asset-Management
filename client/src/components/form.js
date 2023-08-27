@@ -60,15 +60,12 @@ const Form = ({ fields }) => {
 						return (
 							<div key={field.label}>
 								<InputLabel id={field.label}>{field.label}</InputLabel>
-								<RadioGroup disabled={field.disabled}>
+								<RadioGroup
+									sx={{ display: "flex", justifyContent: "space-evenly" }}
+									row={field.direction === "row"}
+									disabled={field.disabled}>
 									{field.values.map((value) => (
-										<FormControlLabel
-											key={value}
-											value={value}
-											control={<Radio />}
-											label={value}
-											fullWidth
-										/>
+										<FormControlLabel key={value} value={value} control={<Radio />} label={value} />
 									))}
 								</RadioGroup>
 							</div>

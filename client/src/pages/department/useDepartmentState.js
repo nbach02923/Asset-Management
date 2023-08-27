@@ -1,5 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import API from "../../services/request";
+import createAllField from "../../utils/field";
+
 export function useDepartmentState() {
 	const [data, setData] = useState([]);
 	const [tableHeader, setTableHeader] = useState([]);
@@ -26,17 +28,17 @@ export function useDepartmentState() {
 		setOpen(false);
 	};
 	const handleAddNew = () => {
-		setFields([createField("Name", "text", selectedName, setSelectedName)]);
+		setFields([createAllField.createField("Name", "text", selectedName, setSelectedName)]);
 		setOpen(true);
-		setTitle("Add New Category");
+		setTitle("Add New Department");
 		setCurrentAction("addNew");
 	};
 	const handleEdit = (row) => {
 		setSelectedId(row.id);
 		setSelectedName(row.name);
-		setFields([createField("Name", "text", row.name, setSelectedName)]);
+		setFields([createAllField.createField("Name", "text", row.name, setSelectedName)]);
 		setOpen(true);
-		setTitle("Edit Category");
+		setTitle("Edit Department");
 		setCurrentAction("edit");
 	};
 	const handleDelete = (row) => {
@@ -144,14 +146,5 @@ export function useDepartmentState() {
 		errorStatusCode,
 		setErrorStatusCode,
 		handleClose,
-	};
-}
-function createField(label, type, value, onChange, disabled = false) {
-	return {
-		label,
-		type,
-		value,
-		onChange: (event) => onChange(event.target.value),
-		disabled,
 	};
 }

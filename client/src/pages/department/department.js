@@ -43,7 +43,7 @@ const Department = () => {
 				open={showWarning}
 				handleClose={() => setShowWarning(false)}
 				handleOk={handleAPI}
-				message="Are you sure to delete this asset?"
+				message="Are you sure to delete this department?"
 			/>
 			<Popup.ErrorPopup
 				open={showError}
@@ -54,7 +54,7 @@ const Department = () => {
 			<Popup.SuccessPopup
 				open={showSuccess}
 				handleClose={() => setShowSuccess(false)}
-				message={"The asset was deleted successfully."}
+				message={"The department account was deleted successfully."}
 			/>
 		</Container>
 	);

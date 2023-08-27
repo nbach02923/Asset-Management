@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import API from "../../services/request";
+import createAllField from "../../utils/field";
 
 export default function useCategoryState() {
 	const [data, setData] = useState([]);
@@ -27,7 +28,7 @@ export default function useCategoryState() {
 		setOpen(false);
 	};
 	const handleAddNew = () => {
-		setFields([createField("Name", "text", selectedName, setSelectedName)]);
+		setFields([createAllField.createField("Name", "text", selectedName, setSelectedName)]);
 		setOpen(true);
 		setTitle("Add New Category");
 		setCurrentAction("addNew");
@@ -35,7 +36,7 @@ export default function useCategoryState() {
 	const handleEdit = (row) => {
 		setSelectedId(row.id);
 		setSelectedName(row.name);
-		setFields([createField("Name", "text", row.name, setSelectedName)]);
+		setFields([createAllField.createField("Name", "text", row.name, setSelectedName)]);
 		setOpen(true);
 		setTitle("Edit Category");
 		setCurrentAction("edit");
@@ -142,14 +143,5 @@ export default function useCategoryState() {
 		setShowWarning,
 		errorStatusCode,
 		responseMessage,
-	};
-}
-function createField(label, type, value, onChange, disabled = false) {
-	return {
-		label,
-		type,
-		value,
-		onChange: (event) => onChange(event.target.value),
-		disabled,
 	};
 }

@@ -5,7 +5,7 @@ import useUserState from "./useUserState";
 import ModalComponent from "../../components/modal";
 import Popup from "../../components/popup";
 
-const Asset = () => {
+const User = () => {
 	const {
 		data,
 		tableHeader,
@@ -57,7 +57,7 @@ const Asset = () => {
 				open={showWarning}
 				handleClose={() => setShowWarning(false)}
 				handleOk={handleAPI}
-				message="Are you sure to delete this asset?"
+				message="Are you sure to delete this user account?"
 			/>
 			<Popup.ErrorPopup
 				open={showError}
@@ -68,9 +68,9 @@ const Asset = () => {
 			<Popup.SuccessPopup
 				open={showSuccess}
 				handleClose={() => setShowSuccess(false)}
-				message={"The asset was deleted successfully."}
+				message={"The user account was deleted successfully."}
 			/>
 		</Container>
 	);
 };
-export default Asset;
+export default User;

@@ -206,7 +206,6 @@ export default function useAssetState() {
 					categoryId: selectedCategoryId,
 					description: selectedDescription,
 				};
-				console.log(payload);
 				API.patchAPI(`/asset/${selectedId}`, headers, payload)
 					.then((response) => {
 						resolve(response.data);
@@ -274,8 +273,9 @@ function createSelectField(
 	options,
 	value,
 	onChange,
-	category = null,
-	setSelectedCategoryId = null,
+	items = null,
+	setSelectedId = null,
+	idProperty = "id",
 	disabled = false
 ) {
 	return {
@@ -285,10 +285,10 @@ function createSelectField(
 		value,
 		onChange: (event) => {
 			onChange(event.target.value);
-			if (category && setSelectedCategoryId) {
-				const selectedCategoryName = event.target.value;
-				const selectedCategory = category.find((item) => item.name === selectedCategoryName);
-				setSelectedCategoryId(selectedCategory.id);
+			if (items && setSelectedId) {
+				const selectedName = event.target.value;
+				const selectedItem = items.find((item) => item.name === selectedName);
+				setSelectedId(selectedItem[idProperty]);
 			}
 		},
 		disabled,

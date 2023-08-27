@@ -1,60 +1,42 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
+	Box,
+	Button,
+	InputAdornment,
+	Paper,
 	Table,
 	TableBody,
 	TableCell,
 	TableContainer,
-	TableHead,
-	TableRow,
-	Paper,
-	TextField,
-	IconButton,
-	InputAdornment,
-	Menu,
-	MenuItem,
-	Box,
-	Button,
-	Tooltip,
-	TablePagination,
-	Zoom,
-	Typography,
 	TableFooter,
+	TableHead,
+	TablePagination,
+	TableRow,
+	TextField,
+	Typography,
+	IconButton,
 } from "@mui/material";
-import EditIcon from "@mui/icons-material/Edit";
-import ContentPasteSearchIcon from "@mui/icons-material/ContentPasteSearch";
-import DeleteIcon from "@mui/icons-material/Delete";
-import SearchIcon from "@mui/icons-material/Search";
-import FilterAltIcon from "@mui/icons-material/FilterAlt";
-import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
+import {
+	AddCircleOutline as AddCircleOutlineIcon,
+	Delete as DeleteIcon,
+	Edit as EditIcon,
+	Search as SearchIcon,
+	ContentPasteSearch as ContentPasteSearchIcon,
+} from "@mui/icons-material";
+import { Zoom } from "@mui/material";
+import Tooltip from "@mui/material/Tooltip";
 
-const DataTable = ({
-	title,
-	headers,
-	data,
-	handleActionOnClick,
-	filterableColumns = [],
-	columnWidths,
-	actionsColumnWidth,
-}) => {
+const DataTable = ({ title, headers, data, handleActionOnClick, columnWidths, actionsColumnWidth }) => {
 	const [searchTerm, setSearchTerm] = useState("");
 	const [filteredData, setFilteredData] = useState(data);
-	const [columnFilters, setColumnFilters] = useState({});
-	const [anchorEl, setAnchorEl] = useState(null);
-	const [selectedColumn, setSelectedColumn] = useState(null);
 	const [page, setPage] = useState(0);
 	const [originalData, setOriginalData] = useState(data || []);
 	const rowsPerPage = 15;
-	const handleFilterIconClick = (event, columnName) => {
-		setAnchorEl(event.currentTarget);
-		setSelectedColumn(columnName);
-	};
-	const handleMenuClose = () => {
-		setAnchorEl(null);
-		setSelectedColumn(null);
-	};
+
 	useEffect(() => {
 		setFilteredData(data);
 	}, [data]);
+
 	const handleSearch = (event) => {
 		setSearchTerm(event.target.value);
 		if (event.target.value === "") {
@@ -69,37 +51,29 @@ const DataTable = ({
 			);
 		}
 	};
-	const handleColumnFilterChange = (filterValue, columnName) => {
-		setColumnFilters((prevFilters) => ({
-			...prevFilters,
-			[columnName]: filterValue,
-		}));
-	};
-	useEffect(() => {
-		let filteredData = data;
-		Object.entries(columnFilters).forEach(([columnName, filterValue]) => {
-			if (filterValue !== "") {
-				filteredData = filteredData.filter((row) => row[columnName] === filterValue);
-			}
-		});
-		setFilteredData(filteredData);
-	}, [data, columnFilters]);
+
 	useEffect(() => {
 		setOriginalData(data);
 		setFilteredData(data);
 	}, [data]);
+
 	return (
 		<>
 			<Typography variant="h3" sx={{ marginBlock: "10px" }}>
 				{title}
 			</Typography>
 			<Box
-				sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", justifyItems: "center" }}>
+				sx={{
+					display: "flex",
+					justifyContent: "space-between",
+					alignItems: "center",
+					justifyItems: "center",
+				}}>
 				<TextField
 					label="Search Item"
 					value={searchTerm}
 					onChange={handleSearch}
-					sx={{ marginBottom: "5px" }}
+					sx={{ marginBottom: "5px", width: "300px" }}
 					size="small"
 					InputProps={{
 						startAdornment: (
@@ -127,31 +101,6 @@ const DataTable = ({
 							{headers.map((header, index) => (
 								<TableCell key={index} style={{ width: columnWidths && columnWidths[index] }}>
 									{header}
-									{filterableColumns.includes(header) && (
-										<>
-											<IconButton onClick={(event) => handleFilterIconClick(event, header)}>
-												<FilterAltIcon />
-											</IconButton>
-											<Menu
-												anchorEl={anchorEl}
-												open={selectedColumn === header}
-												onClose={handleMenuClose}>
-												<MenuItem onClick={() => handleColumnFilterChange("", header)}>
-													None
-												</MenuItem>
-												{[...new Set(data.map((row) => row[header]))].map((value) => (
-													<MenuItem
-														key={value}
-														onClick={() => {
-															handleColumnFilterChange(value, header);
-															handleMenuClose();
-														}}>
-														{value}
-													</MenuItem>
-												))}
-											</Menu>
-										</>
-									)}
 								</TableCell>
 							))}
 							{handleActionOnClick && (
@@ -175,6 +124,7 @@ const DataTable = ({
 												(value, index) =>
 													![
 														"id",
+														"code",
 														"type",
 														"description",
 														"fullName",
