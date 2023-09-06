@@ -26,17 +26,23 @@ import {
 import { Zoom } from "@mui/material";
 import Tooltip from "@mui/material/Tooltip";
 
-const DataTable = ({ title, headers, data, handleActionOnClick, columnWidths, actionsColumnWidth }) => {
+const DataTable = ({
+	title,
+	headers,
+	data,
+	handleActionOnClick,
+	columnWidths,
+	actionsColumnWidth,
+	shouldRenderEditButton = () => true,
+}) => {
 	const [searchTerm, setSearchTerm] = useState("");
 	const [filteredData, setFilteredData] = useState(data);
 	const [page, setPage] = useState(0);
 	const [originalData, setOriginalData] = useState(data || []);
 	const rowsPerPage = 15;
-
 	useEffect(() => {
 		setFilteredData(data);
 	}, [data]);
-
 	const handleSearch = (event) => {
 		setSearchTerm(event.target.value);
 		if (event.target.value === "") {
@@ -51,12 +57,10 @@ const DataTable = ({ title, headers, data, handleActionOnClick, columnWidths, ac
 			);
 		}
 	};
-
 	useEffect(() => {
 		setOriginalData(data);
 		setFilteredData(data);
 	}, [data]);
-
 	return (
 		<>
 			<Typography variant="h3" sx={{ marginBlock: "10px" }}>
@@ -143,23 +147,42 @@ const DataTable = ({ title, headers, data, handleActionOnClick, columnWidths, ac
 											))}
 										{handleActionOnClick && (
 											<TableCell style={{ width: actionsColumnWidth, textAlign: "center" }}>
-												{handleActionOnClick.edit && (
-													<Tooltip title="Edit" TransitionComponent={Zoom}>
-														<IconButton onClick={() => handleActionOnClick.edit(row)}>
-															<EditIcon />
-														</IconButton>
-													</Tooltip>
-												)}
+												{handleActionOnClick.edit &&
+													(!shouldRenderEditButton || shouldRenderEditButton(row)) && (
+														<Tooltip title="Edit" TransitionComponent={Zoom}>
+															<IconButton
+																onClick={() => handleActionOnClick.edit(row)}
+																sx={{
+																	"&:hover": {
+																		color: "#3f51b5",
+																	},
+																}}>
+																<EditIcon />
+															</IconButton>
+														</Tooltip>
+													)}
 												{handleActionOnClick.view && (
 													<Tooltip title="View" TransitionComponent={Zoom}>
-														<IconButton onClick={() => handleActionOnClick.view(row)}>
+														<IconButton
+															onClick={() => handleActionOnClick.view(row)}
+															sx={{
+																"&:hover": {
+																	color: "#2196f3",
+																},
+															}}>
 															<ContentPasteSearchIcon />
 														</IconButton>
 													</Tooltip>
 												)}
 												{handleActionOnClick.delete && (
 													<Tooltip title="Delete" TransitionComponent={Zoom}>
-														<IconButton onClick={() => handleActionOnClick.delete(row)}>
+														<IconButton
+															onClick={() => handleActionOnClick.delete(row)}
+															sx={{
+																"&:hover": {
+																	color: "#f44336",
+																},
+															}}>
 															<DeleteIcon />
 														</IconButton>
 													</Tooltip>

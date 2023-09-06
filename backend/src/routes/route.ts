@@ -68,9 +68,9 @@ router.route("/position").post(token.verifyToken, token.checkAdmin, crudPosition
 router.route("/position/:positionCode").delete(token.verifyToken, token.checkAdmin, crudPosition.deletePosition);
 router.route("/position/:positionCode").patch(token.verifyToken, token.checkAdmin, crudPosition.updatePosition);
 
-function startScheduler() {
-	schedule.scheduleJob("0 9,15 * * *", email.sendOverdueEmail);
-}
-startScheduler()
+// function startScheduler() {
+// 	schedule.scheduleJob("0 9,15 * * *", email.sendOverdueEmail);
+// }
+// startScheduler()
 
 export default router;

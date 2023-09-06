@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import Popup from "../components/popup";
 import API from "../services/request";
 import backgroundImage from "../utils/background.jpg";
-import logo from "../utils/logo.png";
+import logo from "../logo.svg";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 

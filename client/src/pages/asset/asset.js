@@ -28,7 +28,6 @@ const Asset = () => {
 		errorMessage,
 		currentAction,
 	} = useAssetState();
-
 	return (
 		<Container>
 			<DataTable

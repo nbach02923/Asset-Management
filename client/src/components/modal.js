@@ -29,7 +29,7 @@ const ModalComponent = ({ open, handleClose, title, fields = [], handleAPI, isVi
 				})
 				.catch((err) => {
 					setLoading(false);
-					setStatusCode(err.response.status);
+					setStatusCode(err.response.status)
 					if (err.response.data.details) {
 						setResponseMessage(err.response.data.details.body[0].message);
 					} else {
@@ -87,7 +87,7 @@ const ModalComponent = ({ open, handleClose, title, fields = [], handleAPI, isVi
 				open={warningOpen}
 				handleClose={() => handleWarningClose("no")}
 				handleOk={() => handleWarningClose("ok")}
-				message="Are you sure the information is correct?"
+				message="Are you sure?"
 			/>
 			<Popup.ErrorPopup
 				open={errorOpen}

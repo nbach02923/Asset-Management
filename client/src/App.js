@@ -10,6 +10,8 @@ import Category from "./pages/category/category";
 import User from "./pages/user/user";
 import Department from "./pages/department/department";
 import Position from "./pages/position/position";
+import Profile from "./pages/profile/profile";
+import Allocation from "./pages/allocation/allocation"
 
 function App() {
 	return (
@@ -24,6 +26,8 @@ function App() {
 						<Route path="/system/user" element={<User />} />
 						<Route path="/system/department" element={<Department />} />
 						<Route path="/system/position" element={<Position />} />
+						<Route path="/profile" element={<Profile />} />
+						<Route path="/register/assetAllocation" element={<Allocation />} />
 					</Route>
 				</Route>
 			</Routes>

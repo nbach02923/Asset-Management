@@ -18,9 +18,11 @@ async function getAll(req: Request, res: Response, next: NextFunction) {
 					.createQueryBuilder("department")
 					.leftJoinAndSelect("department.user", "user")
 					.select(["department.id as id", "department.name as name"])
-					.addSelect("COUNT(user.id", "userCount")
-					.where("department.id = :id", { id: req.query.id })
-					.groupBy("department.id")
+					.addSelect("COUNT(user.id)", "userCount")
+					.where("department.id = :id AND department.isDeleted = :isDeleted", {
+						id: req.query.id as string,
+						isDeleted: false,
+					})
 					.getRawOne();
 			}
 		} else {

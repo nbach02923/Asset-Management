@@ -1,7 +1,11 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import API from "../../services/request";
+import createAllField from "../../utils/field";
+import { Button } from "@mui/material";
+import decodedJWT from "../../utils/decodeJWT";
 
 export default function useAssetState() {
+	const decoded = decodedJWT();
 	const [data, setData] = useState([]);
 	const [tableHeader, setTableHeader] = useState([]);
 	const [open, setOpen] = useState(false);
@@ -22,6 +26,8 @@ export default function useAssetState() {
 	const [responseMessage, setResponseMessage] = useState("");
 	const [errorStatusCode, setErrorStatusCode] = useState(null);
 	const [updateData, setUpdateData] = useState(false);
+	const [selectedAllocateDate, setSelectedAllocateDate] = useState("");
+	const [selectedReturnDate, setSelectedReturnDate] = useState("");
 	const headers = useMemo(() => {
 		return {
 			"Content-Type": "application/json",
@@ -29,6 +35,30 @@ export default function useAssetState() {
 			Accept: "application/json",
 		};
 	}, []);
+	const HoverButton = (props) => {
+		const [hover, setHover] = useState(false);
+		return (
+			<Button
+				variant={hover ? "contained" : "outlined"}
+				onMouseEnter={() => setHover(true)}
+				onMouseLeave={() => setHover(false)}
+				{...props}
+			/>
+		);
+	}
+	const handleCheckIn = useCallback(
+		(row) => {
+			setSelectedId(row.id);
+			setOpen(true);
+			setFields([
+				createAllField.createField("Allocation Date", "date", selectedAllocateDate, setSelectedAllocateDate),
+				createAllField.createField("Return Date", "date", selectedReturnDate, setSelectedReturnDate),
+			]);
+			setTitle("Allocate Request");
+			setCurrentAction("allocate");
+		},
+		[selectedAllocateDate, selectedReturnDate]
+	);
 	useEffect(() => {
 		const querys = {
 			limit: 1000,
@@ -42,7 +72,7 @@ export default function useAssetState() {
 				categoryData.forEach((category) => {
 					categoryMap[category.id] = category.name;
 				});
-				const customHeaders = ["Asset Name", "Asset Picture", "Serial", "Category", "Status"];
+				const customHeaders = ["Asset Name", "Asset Picture", "Serial", "Category", "Status", "Allocation"];
 				setTableHeader(customHeaders);
 				const customData = assetData.map((item) => {
 					return {
@@ -54,12 +84,21 @@ export default function useAssetState() {
 						category: categoryMap[item.categoryAssetId],
 						status: item.status,
 						description: item.description,
+						allocation:
+							item.status === "Ready to Deploy" ? (
+								<HoverButton
+									color="success"
+									onClick={() => handleCheckIn(item)}
+									size="small">
+									Check In
+								</HoverButton>
+							) : null,
 					};
 				});
 				setData(customData);
 			}
 		);
-	}, [headers, updateData]);
+	}, [headers, updateData, handleCheckIn]);
 	useEffect(() => {
 		if (!open) {
 			setSelectedName("");
@@ -89,9 +128,14 @@ export default function useAssetState() {
 	}, [open, selectedName, selectedType, selectedCategory, selectedStatus, selectedDescription]);
 	const handleAddNew = () => {
 		setFields([
-			createField("Asset Name", "text", selectedName, setSelectedName),
-			createSelectField("Type", ["Stationary", "Nonstationary", "Other"], selectedType, setSelectedType),
-			createSelectField(
+			createAllField.createField("Asset Name", "text", selectedName, setSelectedName),
+			createAllField.createSelectField(
+				"Type",
+				["Stationary", "Nonstationary", "Other"],
+				selectedType,
+				setSelectedType
+			),
+			createAllField.createSelectField(
 				"Category",
 				category.map((item) => item.name),
 				selectedCategory,
@@ -99,8 +143,13 @@ export default function useAssetState() {
 				category,
 				setSelectedCategoryId
 			),
-			createSelectField("Status", ["Ready to Deploy", "Deployed", "Error"], selectedStatus, setSelectedStatus),
-			createField("Description", "textarea", selectedDescription, setSelectedDescription),
+			createAllField.createSelectField(
+				"Status",
+				["Ready to Deploy", "Deployed", "Error"],
+				selectedStatus,
+				setSelectedStatus
+			),
+			createAllField.createField("Description", "textarea", selectedDescription, setSelectedDescription),
 		]);
 		setOpen(true);
 		setTitle("Add New Asset");
@@ -115,9 +164,14 @@ export default function useAssetState() {
 		setSelectedCategory(row.category);
 		setSelectedDescription(row.description);
 		setFields([
-			createField("Asset Name", "text", row.name, setSelectedName),
-			createSelectField("Type", ["Stationary", "Nonstationary", "Other"], row.type, setSelectedType),
-			createSelectField(
+			createAllField.createField("Asset Name", "text", row.name, setSelectedName),
+			createAllField.createSelectField(
+				"Type",
+				["Stationary", "Nonstationary", "Other"],
+				row.type,
+				setSelectedType
+			),
+			createAllField.createSelectField(
 				"Category",
 				category.map((item) => item.name),
 				row.category,
@@ -125,7 +179,7 @@ export default function useAssetState() {
 				category,
 				setSelectedCategoryId
 			),
-			createField("Description", "textarea", row.description, setSelectedDescription),
+			createAllField.createField("Description", "textarea", row.description, setSelectedDescription),
 		]);
 		setOpen(true);
 		setTitle("Edit Asset");
@@ -140,35 +194,11 @@ export default function useAssetState() {
 		setSelectedStatus(row.status);
 		setSelectedDescription(row.description);
 		setFields([
-			createField("Asset Name", "text", row.name, setSelectedName, true),
-			createSelectField(
-				"Type",
-				["Stationary", "Nonstationary", "Other"],
-				row.type,
-				setSelectedType,
-				null,
-				null,
-				true
-			),
-			createSelectField(
-				"Category",
-				category.map((item) => item.name),
-				row.category,
-				setSelectedCategory,
-				category,
-				setSelectedCategoryId,
-				true
-			),
-			createSelectField(
-				"Status",
-				["Ready to Deploy", "Deployed", "Error"],
-				row.status,
-				setSelectedStatus,
-				null,
-				null,
-				true
-			),
-			createField("Description", "textarea", row.description, setSelectedDescription, true),
+			createAllField.createField("Asset Name", "text", row.name, setSelectedName, true),
+			createAllField.createField("Type", "text", row.type, setSelectedType, true),
+			createAllField.createField("Category", "text", row.category, setSelectedCategory, true),
+			createAllField.createField("Status", "text", row.status, setSelectedStatus, true),
+			createAllField.createField("Description", "textarea", row.description, setSelectedDescription, true),
 		]);
 		setOpen(true);
 		setTitle("View Asset");
@@ -193,7 +223,7 @@ export default function useAssetState() {
 				};
 				API.postAPI("/asset", headers, payload)
 					.then((response) => {
-						resolve(response.data);
+						resolve(response);
 						setUpdateData((prev) => !prev);
 					})
 					.catch((err) => {
@@ -208,7 +238,7 @@ export default function useAssetState() {
 				};
 				API.patchAPI(`/asset/${selectedId}`, headers, payload)
 					.then((response) => {
-						resolve(response.data);
+						resolve(response);
 						setUpdateData((prev) => !prev);
 					})
 					.catch((err) => {
@@ -218,7 +248,7 @@ export default function useAssetState() {
 				setShowWarning(false);
 				API.deleteAPI(`/asset/${selectedId}`, headers)
 					.then((response) => {
-						resolve(response.data);
+						resolve(response);
 						setUpdateData((prev) => !prev);
 						setShowSuccess(true);
 						setResponseMessage("Delete Succesfully");
@@ -231,6 +261,20 @@ export default function useAssetState() {
 						} else {
 							setResponseMessage(err.response.data.message);
 						}
+						reject(err);
+					});
+			} else if (currentAction === "allocate") {
+				const payload = {
+					userId: decoded.id,
+					allocationDate: selectedAllocateDate,
+					returnDate: selectedReturnDate,
+				};
+				API.postAPI(`/asset/allocationAsset/${selectedId}`, headers, payload)
+					.then((response) => {
+						resolve(response);
+						setUpdateData((prev) => !prev);
+					})
+					.catch((err) => {
 						reject(err);
 					});
 			}
@@ -257,40 +301,5 @@ export default function useAssetState() {
 		showSuccess,
 		setShowSuccess,
 		currentAction,
-	};
-}
-function createField(label, type, value, onChange, disabled = false) {
-	return {
-		label,
-		type,
-		value,
-		onChange: (event) => onChange(event.target.value),
-		disabled,
-	};
-}
-function createSelectField(
-	label,
-	options,
-	value,
-	onChange,
-	items = null,
-	setSelectedId = null,
-	idProperty = "id",
-	disabled = false
-) {
-	return {
-		label,
-		type: "select",
-		options,
-		value,
-		onChange: (event) => {
-			onChange(event.target.value);
-			if (items && setSelectedId) {
-				const selectedName = event.target.value;
-				const selectedItem = items.find((item) => item.name === selectedName);
-				setSelectedId(selectedItem[idProperty]);
-			}
-		},
-		disabled,
 	};
 }

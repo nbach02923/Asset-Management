@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from "express";
 import xlsx from "xlsx";
 import fs from "fs";
-import AppDataSource from '../../../ormconfig';
-import UserInformation from '../../entities/User_Information';
+import AppDataSource from "../../../ormconfig";
+import UserInformation from "../../entities/User_Information";
 
 async function uploadFileExcel(req: Request, next: NextFunction) {
 	const path = "./src/controllers/uploadFile/" + req.file.filename;
@@ -14,38 +14,38 @@ async function uploadFileExcel(req: Request, next: NextFunction) {
 	return next();
 }
 
-async function uploadFile(req:Request, res: Response, next: NextFunction) {
+async function uploadFile(req: Request, res: Response, next: NextFunction) {
 	try {
-		const file = req.file
+		const file = req.file;
 		if (!file) {
-			return res.status(400).json({message: "Invalid file extension"})
+			return res.status(400).json({ message: "Invalid file extension" });
 		}
-		const fileName = file.filename
-		const filePath = `http://127.0.0.1:2901/api/${fileName}`
+		const fileName = file.filename;
+		const filePath = `http://127.0.0.1:2901/api/${fileName}`;
 		const existingUser = await AppDataSource.getRepository(UserInformation).findOne({
 			where: {
-				userId: req.params.userId
-			}
-		})
+				userId: req.params.userId,
+			},
+		});
 		if (!existingUser) {
-			return res.status(404).json({message: "Người dùng không tồn tại"})
+			return res.status(404).json({ message: "User account does not exist" });
 		} else {
 			await AppDataSource.createQueryBuilder()
 				.update(UserInformation)
 				.set({
-					avatarPath: filePath
+					avatarPath: filePath,
 				})
-				.where("userId = :userId", {userId: req.params.userId})
-				.execute()
-			return res.status(200).json({message: "File upload thành công "})
+				.where("userId = :userId", { userId: req.params.userId })
+				.execute();
+			return res.status(200).json({ message: "File upload successfully" });
 		}
 	} catch (err) {
-		next(err)
+		next(err);
 	}
 }
 
 const upload = {
 	uploadFile,
-	uploadFileExcel
-}
+	uploadFileExcel,
+};
 export default upload;

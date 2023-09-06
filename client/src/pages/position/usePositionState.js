@@ -54,7 +54,7 @@ export default function usePositionState() {
 				};
 				API.postAPI("/position", headers, payload)
 					.then((response) => {
-						resolve(response.data);
+						resolve(response);
 						setUpdateData((prev) => !prev);
 					})
 					.catch((err) => {
@@ -66,7 +66,7 @@ export default function usePositionState() {
 				};
 				API.patchAPI(`/position/${selectedId}`, headers, payload)
 					.then((response) => {
-						resolve(response.data);
+						resolve(response);
 						setUpdateData((prev) => !prev);
 					})
 					.catch((err) => {
@@ -77,7 +77,7 @@ export default function usePositionState() {
 				setShowWarning(false);
 				API.deleteAPI(`/position/${selectedId}`, headers)
 					.then((response) => {
-						resolve(response.data);
+						resolve(response);
 						setUpdateData((prev) => !prev);
 						setShowSuccess(true);
 						setResponseMessage("Delete successfully");

@@ -284,9 +284,11 @@ async function allocationAsset(req: Request, res: Response, next: NextFunction) 
 						allocationDate: req.body.allocationDate,
 						returnDate: req.body.returnDate,
 					};
-					email.sendEmailAllocationToAdmin(data);
+					console.log(`Request Data: ${data.allocationDate}`);
 					const allocation = await AppDataSource.getRepository(Allocation).create(data);
+					console.log(`Allocation Data: ${allocation.allocationDate}`);
 					const result = await AppDataSource.getRepository(Allocation).save(allocation);
+					console.log(`Result Data: ${result.allocationDate}`);
 					return res.status(201).json({
 						message: "Request sent successfully",
 						result,
@@ -311,7 +313,7 @@ async function verifyAllocation(req: Request, res: Response, next: NextFunction)
 			return res.status(404).json({ message: "Request does not exist" });
 		} else {
 			if (allocation.allocationStatus === "Pending") {
-				const verify = req.body.status;
+				const verify = req.body.allocationStatus;
 				switch (verify) {
 					case "Allocated": {
 						await AppDataSource.createQueryBuilder()
@@ -356,6 +358,9 @@ async function verifyAllocation(req: Request, res: Response, next: NextFunction)
 							.execute();
 						// ? Do I also need to send email to user when they get allocation request reject
 						return res.status(200).json({ message: "Reject request susccesfully" });
+					}
+					default: {
+						return res.status(400).json({ message: "Invalid request" });
 					}
 				}
 			} else {
@@ -439,14 +444,37 @@ async function getAllocation(req: Request, res: Response, next: NextFunction) {
 	try {
 		const limit = req.query.limit ? parseInt(req.query.limit as string) : 15;
 		const offset = req.query.offset ? parseInt(req.query.offset as string) : 0;
-		const allocation = await AppDataSource.getRepository(Allocation)
-			.createQueryBuilder("allocation")
-			.leftJoin("allocation.asset", "asset")
-			.where("asset.isDeleted = :isDeleted", { isDeleted: false })
-			.take(limit)
-			.skip(offset)
-			.getMany();
-		return res.status(200).json(allocation);
+		let allocation;
+		if (req.query.userId) {
+			allocation = await AppDataSource.getRepository(Allocation)
+				.createQueryBuilder("allocation")
+				.leftJoin("allocation.asset", "asset")
+				.leftJoin("allocation.user", "user")
+				.where(
+					"asset.isDeleted = :isAssetDeleted AND user.isDeleted = :isUserDeleted AND allocation.userId = :userId",
+					{
+						isAssetDeleted: false,
+						isUserDeleted: false,
+						userId: req.query.userId,
+					}
+				)
+				.take(limit)
+				.skip(offset)
+				.getMany();
+		} else {
+			allocation = await AppDataSource.getRepository(Allocation)
+				.createQueryBuilder("allocation")
+				.leftJoin("allocation.asset", "asset")
+				.leftJoin("allocation.user", "user")
+				.where("asset.isDeleted = :isAssetDeleted AND user.isDeleted = :isUserDeleted", {
+					isAssetDeleted: false,
+					isUserDeleted: false,
+				})
+				.take(limit)
+				.skip(offset)
+				.getMany();
+			return res.status(200).json(allocation);
+		}
 	} catch (err) {
 		next(err);
 	}

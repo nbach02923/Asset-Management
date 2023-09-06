@@ -1,17 +1,21 @@
-import React from "react";
-import { useState } from "react";
-import { AppBar, Toolbar, IconButton, Typography, Box, TextField, InputAdornment } from "@mui/material";
+import React, { useState } from "react";
+import { AppBar, Toolbar, IconButton, Typography, Box, TextField, InputAdornment, Tooltip, Zoom } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import SideBar from "../SideBar/sideBar";
-import logo from "../../../utils/logo.png";
+import logo from "../../../logo.svg";
 import LogoutIcon from "@mui/icons-material/Logout";
 import SearchIcon from "@mui/icons-material/Search";
-import { Outlet } from "react-router-dom";
+import { Outlet, useNavigate } from "react-router-dom";
 
 const NavBar = () => {
+	const navigate = useNavigate();
 	const [open, setOpen] = useState(false);
 	const handleToggle = () => {
 		setOpen((prevOpen) => !prevOpen);
+	};
+	const handleLogout = () => {
+		localStorage.removeItem("token");
+		navigate("/login");
 	};
 	return (
 		<>
@@ -40,9 +44,11 @@ const NavBar = () => {
 							sx: { backgroundColor: "white" },
 						}}
 					/>
-					<IconButton edge="end" sx={{ color: "white", marginLeft: "12px" }}>
-						<LogoutIcon />
-					</IconButton>
+					<Tooltip title="Logout" TransitionComponent={Zoom}>
+						<IconButton edge="end" sx={{ color: "white", marginLeft: "12px" }} onClick={handleLogout}>
+							<LogoutIcon />
+						</IconButton>
+					</Tooltip>
 				</Toolbar>
 			</AppBar>
 			<SideBar open={open} setOpen={setOpen} />

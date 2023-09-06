@@ -23,7 +23,7 @@ async function login(req: Request, res: Response, next: NextFunction) {
 					process.env.ACCESSTOKEN,
 					"24h"
 				);
-				return res.status(200).json({ accessToken, userRole: role, department: departmentId, userId: id });
+				return res.status(200).json({ accessToken });
 			} else {
 				return res.status(400).json({ message: "Enter wrong password" });
 			}

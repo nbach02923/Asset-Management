@@ -54,7 +54,7 @@ export function useDepartmentState() {
 				};
 				API.postAPI("/department", headers, payload)
 					.then((response) => {
-						resolve(response.data);
+						resolve(response);
 						setUpdateData((prev) => !prev);
 					})
 					.catch((err) => {
@@ -66,7 +66,7 @@ export function useDepartmentState() {
 				};
 				API.patchAPI(`/department/${selectedId}`, headers, payload)
 					.then((response) => {
-						resolve(response.data);
+						resolve(response);
 						setUpdateData((prev) => !prev);
 					})
 					.catch((err) => {
@@ -77,7 +77,7 @@ export function useDepartmentState() {
 				setShowWarning(false);
 				API.deleteAPI(`/department/${selectedId}`, headers)
 					.then((response) => {
-						resolve(response.data);
+						resolve(response);
 						setUpdateData((prev) => !prev);
 						setShowSuccess(true);
 						setResponseMessage("Delete successfully");

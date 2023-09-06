@@ -63,7 +63,11 @@ const Form = ({ fields }) => {
 								<RadioGroup
 									sx={{ display: "flex", justifyContent: "space-evenly" }}
 									row={field.direction === "row"}
-									disabled={field.disabled}>
+									disabled={field.disabled}
+									onChange={(event) => {
+										handleChange(field.label, event.target.value);
+										field.onChange(event);
+									}}>
 									{field.values.map((value) => (
 										<FormControlLabel key={value} value={value} control={<Radio />} label={value} />
 									))}
@@ -78,6 +82,23 @@ const Form = ({ fields }) => {
 									size="small"
 									fullWidth
 									multiline
+									value={values[field.label]}
+									onChange={(event) => {
+										handleChange(field.label, event.target.value);
+										field.onChange(event);
+									}}
+									disabled={field.disabled}
+								/>
+							</div>
+						);
+					case "date":
+						return (
+							<div key={field.label}>
+								<InputLabel id={fields.label}>{field.label}</InputLabel>
+								<TextField
+									size="small"
+									type="datetime-local"
+									fullWidth
 									value={values[field.label]}
 									onChange={(event) => {
 										handleChange(field.label, event.target.value);

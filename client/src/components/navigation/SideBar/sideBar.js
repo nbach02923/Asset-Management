@@ -10,7 +10,7 @@ import SettingsApplicationsIcon from "@mui/icons-material/SettingsApplications";
 import { ExpandLess, ExpandMore } from "@mui/icons-material";
 import CloseIcon from "@mui/icons-material/Close";
 import { Link } from "react-router-dom";
-import logo from "../../../utils/logo.png";
+import logo from "../../../logo.svg";
 
 const SideBar = ({ open, setOpen }) => {
 	const [openItems, setOpenItems] = useState({});

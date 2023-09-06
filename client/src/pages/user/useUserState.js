@@ -188,7 +188,20 @@ export default function useUserState() {
 			),
 		]);
 	};
-	const handleView = (row) => {};
+	const handleView = (row) => {
+		setCurrentAction("view");
+		setFields([
+			createAllField.createField("User Name", "text", row.userName, setSelectedUserName, true),
+			createAllField.createField("Department", "text", row.department, setSelectedDepartment, true),
+			createAllField.createField("Position", "text", row.position, setSelectedPosition, true),
+			createAllField.createField("Full Name", "text", row.fullName, setSelectedFullName, true),
+			createAllField.createField("Email", "text", row.email, setSelectedEmail, true),
+			createAllField.createField("Phone Number", "text", row.phoneNumber, setSelectedPhone, true),
+			createAllField.createField("Date of Birth", "text", row.dob, setSelectedDoB, true),
+		]);
+		setOpen(true);
+		setTitle("View User Details");
+	};
 	const handleDelete = (row) => {
 		setSelectedId(row.id);
 		setCurrentAction("delete");
@@ -206,7 +219,6 @@ export default function useUserState() {
 					positionCode: selectedPositionCode,
 					role: selectedRole === "Admin" ? true : false,
 				};
-				console.log(payload);
 				API.postAPI("/user", headers, payload)
 					.then((response) => {
 						resolve(response);

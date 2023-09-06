@@ -294,7 +294,7 @@ async function changePassword(req: Request, res: Response, next: NextFunction) {
 		const data = {
 			password: req.body.password,
 			newPassword: req.body.newPassword,
-			enterPassword: req.body.enterPassword,
+			confPassword: req.body.confPassword,
 		};
 		const checkUser = await AppDataSource.getRepository(UserAccount).findOne({ where: { id: req.params.userId } });
 		if (!checkUser) {
@@ -304,8 +304,8 @@ async function changePassword(req: Request, res: Response, next: NextFunction) {
 			if (!checkPassword) {
 				return res.status(400).json({ message: "Current account password incorrect" });
 			} else {
-				if (data.newPassword !== data.enterPassword) {
-					return res.status(400).json({ message: "New password and re-enter password does not match" });
+				if (data.newPassword !== data.confPassword) {
+					return res.status(400).json({ message: "New password and confirm password does not match" });
 				} else {
 					const password = hashSync(data.newPassword, 10);
 					await AppDataSource.getRepository(UserAccount).update({ id: req.params.userId }, { password });

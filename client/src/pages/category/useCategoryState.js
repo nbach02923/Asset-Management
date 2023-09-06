@@ -54,7 +54,7 @@ export default function useCategoryState() {
 				};
 				API.postAPI("/categoryAsset", headers, payload)
 					.then((response) => {
-						resolve(response.data);
+						resolve(response);
 						setUpdateData((prev) => !prev);
 					})
 					.catch((err) => {
@@ -66,7 +66,7 @@ export default function useCategoryState() {
 				};
 				API.patchAPI(`/categoryAsset/${selectedId}`, headers, payload)
 					.then((response) => {
-						resolve(response.data);
+						resolve(response);
 						setUpdateData((prev) => !prev);
 					})
 					.catch((err) => {
