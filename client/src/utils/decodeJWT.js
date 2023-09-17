@@ -1,4 +1,4 @@
-export default function decodeJWT() {
+const decodeJWT = () => {
 	const token = localStorage.getItem("token");
 	if (token !== null) {
 		const payload = token.split(".")[1];
@@ -6,4 +6,6 @@ export default function decodeJWT() {
 		const jsonPayload = JSON.parse(decodePayload);
 		return jsonPayload;
 	}
-}
+	return {};
+};
+export default decodeJWT;

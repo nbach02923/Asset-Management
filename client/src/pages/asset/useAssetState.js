@@ -2,10 +2,10 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import API from "../../services/request";
 import createAllField from "../../utils/field";
 import { Button } from "@mui/material";
-import decodedJWT from "../../utils/decodeJWT";
+import decodeJWT from "../../utils/decodeJWT";
 
-export default function useAssetState() {
-	const decoded = decodedJWT();
+const useAssetState = () => {
+	const decoded = decodeJWT();
 	const [data, setData] = useState([]);
 	const [tableHeader, setTableHeader] = useState([]);
 	const [open, setOpen] = useState(false);
@@ -28,6 +28,8 @@ export default function useAssetState() {
 	const [updateData, setUpdateData] = useState(false);
 	const [selectedAllocateDate, setSelectedAllocateDate] = useState("");
 	const [selectedReturnDate, setSelectedReturnDate] = useState("");
+	const [total, setTotal] = useState(0);
+	const [currentPage, setCurrentPage] = useState(0);
 	const headers = useMemo(() => {
 		return {
 			"Content-Type": "application/json",
@@ -45,7 +47,7 @@ export default function useAssetState() {
 				{...props}
 			/>
 		);
-	}
+	};
 	const handleCheckIn = useCallback(
 		(row) => {
 			setSelectedId(row.id);
@@ -61,44 +63,43 @@ export default function useAssetState() {
 	);
 	useEffect(() => {
 		const querys = {
-			limit: 1000,
+			offset: 15 * currentPage,
 		};
-		Promise.all([API.getAPI("/asset", headers, querys), API.getAPI("/categoryAsset", headers, querys)]).then(
-			([assetResponse, categoryResponse]) => {
-				const assetData = assetResponse.data;
-				const categoryData = categoryResponse.data;
-				setCategory(categoryData);
-				const categoryMap = {};
-				categoryData.forEach((category) => {
-					categoryMap[category.id] = category.name;
-				});
-				const customHeaders = ["Asset Name", "Asset Picture", "Serial", "Category", "Status", "Allocation"];
-				setTableHeader(customHeaders);
-				const customData = assetData.map((item) => {
-					return {
-						id: item.id,
-						name: item.name,
-						picture: "",
-						serial: item.serial,
-						type: item.type,
-						category: categoryMap[item.categoryAssetId],
-						status: item.status,
-						description: item.description,
-						allocation:
-							item.status === "Ready to Deploy" ? (
-								<HoverButton
-									color="success"
-									onClick={() => handleCheckIn(item)}
-									size="small">
-									Check In
-								</HoverButton>
-							) : null,
-					};
-				});
-				setData(customData);
-			}
-		);
-	}, [headers, updateData, handleCheckIn]);
+		Promise.all([
+			API.getAPI("/asset", headers, querys),
+			API.getAPI("/categoryAsset", headers, { limit: 100 }),
+		]).then(([assetResponse, categoryResponse]) => {
+			const assetData = assetResponse.data;
+			const categoryData = categoryResponse.data;
+			setCategory(categoryData.category);
+			const categoryMap = {};
+			categoryData.category.forEach((category) => {
+				categoryMap[category.id] = category.name;
+			});
+			const customHeaders = ["Asset Name", "Asset Picture", "Serial", "Category", "Status", "Allocation"];
+			setTableHeader(customHeaders);
+			setTotal(assetData.assetTotal);
+			const customData = assetData.asset.map((item) => {
+				return {
+					id: item.id,
+					name: item.name,
+					picture: "",
+					serial: item.serial,
+					type: item.type,
+					category: categoryMap[item.categoryAssetId],
+					status: item.status,
+					description: item.description,
+					allocation:
+						item.status === "Ready to Deploy" ? (
+							<HoverButton color="success" onClick={() => handleCheckIn(item)} size="small">
+								Check In
+							</HoverButton>
+						) : null,
+				};
+			});
+			setData(customData);
+		});
+	}, [headers, updateData, handleCheckIn, currentPage]);
 	useEffect(() => {
 		if (!open) {
 			setSelectedName("");
@@ -280,6 +281,10 @@ export default function useAssetState() {
 			}
 		});
 	};
+	const shouldRenderEditButton = () => {
+		const userRole = decodeJWT().role;
+		return userRole;
+	};
 	return {
 		data,
 		tableHeader,
@@ -301,5 +306,10 @@ export default function useAssetState() {
 		showSuccess,
 		setShowSuccess,
 		currentAction,
+		shouldRenderEditButton,
+		total,
+		currentPage,
+		setCurrentPage,
 	};
-}
+};
+export default useAssetState;

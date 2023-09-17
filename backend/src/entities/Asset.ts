@@ -16,7 +16,6 @@ export default class Asset extends Base {
 	@Column({ unique: true })
 		serial: string;
 
-	//loại tài sản
 	@Column({
 		type: "enum",
 		enum: ["Stationary", "Nonstationary", "Other"],
@@ -34,6 +33,18 @@ export default class Asset extends Base {
 		default: null,
 	})
 		description: string;
+
+	// @Column({
+	// 	type: "date",
+	// 	default: null,
+	// })
+	// 	warrantDate: string;
+
+	// @Column({
+	// 	type: "date",
+	// 	default: null,
+	// })
+	// 	buyDate: string;
 
 	@Column()
 		categoryAssetId: string;

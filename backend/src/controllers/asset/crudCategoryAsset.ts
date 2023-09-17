@@ -3,28 +3,30 @@ import { Request, Response, NextFunction } from "express";
 import AppDataSource from "../../../ormconfig";
 async function getCategory(req: Request, res: Response, next: NextFunction) {
 	try {
+		const categoryId = req.query.id as string;
+		const categoryRepository = AppDataSource.getRepository(CategoryAsset);
 		let category;
-		if (req.query.id) {
-			const existCategory = await AppDataSource.getRepository(CategoryAsset).findOne({
-				where: { id: req.query.id as string, isDeleted: false },
+		if (categoryId) {
+			const existCategory = await categoryRepository.findOne({
+				where: { id: categoryId, isDeleted: false },
 			});
 			if (!existCategory) {
 				return res.status(404).json({ message: "Category does not exist" });
 			} else {
-				category = await AppDataSource.getRepository(CategoryAsset)
+				category = await categoryRepository
 					.createQueryBuilder("category")
 					.leftJoinAndSelect("category.asset", "asset")
 					.select(["category.id as id", "category.name as name"])
 					.addSelect("COUNT(asset.id)", "assetCount")
 					.where("category.id = :id AND category.isDeleted = :isDeleted", {
-						id: req.query.id,
+						id: categoryId,
 						isDeleted: false,
 					})
 					.groupBy("category.id")
 					.getRawOne();
 			}
 		} else {
-			category = await AppDataSource.getRepository(CategoryAsset)
+			category = await categoryRepository
 				.createQueryBuilder("category")
 				.leftJoinAndSelect("category.asset", "asset", "asset.isDeleted = :isDeleted", { isDeleted: false })
 				.select(["category.id as id", "category.name as name"])
@@ -33,7 +35,8 @@ async function getCategory(req: Request, res: Response, next: NextFunction) {
 				.groupBy("category.id")
 				.getRawMany();
 		}
-		return res.status(200).json(category);
+		const categoryTotal = await categoryRepository.count({ where: { isDeleted: false } });
+		return res.status(200).json({ categoryTotal, category });
 	} catch (err) {
 		return next(err);
 	}

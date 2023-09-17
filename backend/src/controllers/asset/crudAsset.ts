@@ -11,73 +11,44 @@ import UserInformation from "../../entities/User_Information";
 
 async function getAll(req: Request, res: Response, next: NextFunction) {
 	try {
-		const limit = req.query.limit ? parseInt(req.query.limit as string) : 15;
-		const offset = req.query.offset ? parseInt(req.query.offset as string) : 0;
+		const limit = parseInt(req.query.limit as string) || 15;
+		const offset = parseInt(req.query.offset as string) || 0;
 		const allowedValues = ["Ready to Deploy", "Deployed", "Error"];
-		let asset = await AppDataSource.getRepository(Asset).find({
-			where: {
-				isDeleted: false,
-			},
+		const assetQuery = {
+			isDeleted: false,
+			...(req.query.status &&
+				allowedValues.includes(req.query.status as string) && {
+					status: req.query.status as string,
+				}),
+			...(req.query.id && {
+				id: req.query.id as string,
+			}),
+			...(req.query.serial && {
+				serial: req.query.serial as string,
+			}),
+			...(req.query.name && {
+				name: req.query.name as string,
+			}),
+		};
+		const assetTotal = await AppDataSource.getRepository(Asset).count({
+			where: assetQuery,
+		});
+		const asset = await AppDataSource.getRepository(Asset).find({
+			where: assetQuery,
 			take: limit,
 			skip: offset,
 			select: ["id", "name", "type", "status", "status", "description", "serial", "categoryAssetId"],
 		});
-		for (const key in req.query) {
-			switch (key) {
-				case "status": {
-					const status = req.query[key] as string;
-					if (allowedValues.includes(status)) {
-						asset = await AppDataSource.getRepository(Asset).find({
-							where: { status: req.query.status as string, isDeleted: false },
-							take: limit,
-							skip: offset,
-						});
-					}
-					break;
-				}
-				case "id": {
-					const existingId = await AppDataSource.getRepository(Asset).findOne({
-						where: { id: req.query[key] as string, isDeleted: false },
-						select: ["id", "name", "type", "status", "status", "description", "serial", "categoryAssetId"],
-					});
-					if (!existingId) {
-						return res.status(404).json({ message: "Asset does not exist" });
-					} else {
-						asset = [existingId];
-					}
-					break;
-				}
-				case "serial": {
-					const existingSerial = await AppDataSource.getRepository(Asset).findOne({
-						where: { serial: req.query[key] as string, isDeleted: false },
-						select: ["id", "name", "type", "status", "status", "description", "serial", "categoryAssetId"],
-					});
-					if (!existingSerial) {
-						return res.status(404).json({ message: "Asset serial does not exist" });
-					} else {
-						asset = [existingSerial];
-					}
-					break;
-				}
-				case "name": {
-					const existingName = await AppDataSource.getRepository(Asset).find({
-						where: { name: req.query[key] as string, isDeleted: false },
-						take: limit,
-						skip: offset,
-						select: ["id", "name", "type", "status", "status", "description", "serial", "categoryAssetId"],
-					});
-					if (!existingName) {
-						return res.status(404).json({ message: `There is no asset with name: ${req.query[key]}` });
-					} else {
-						asset = existingName;
-					}
-					break;
-				}
-				default:
-					break;
-			}
+		if (req.query.id && asset.length === 0) {
+			return res.status(404).json({ message: "Asset does not exist" });
 		}
-		return res.status(200).json(asset);
+		if (req.query.serial && asset.length === 0) {
+			return res.status(404).json({ message: "Asset serial does not exist" });
+		}
+		if (req.query.name && asset.length === 0) {
+			return res.status(404).json({ message: `There is no asset with name: ${req.query.name}` });
+		}
+		return res.status(200).json({ assetTotal, asset });
 	} catch (err) {
 		return next(err);
 	}
@@ -89,7 +60,7 @@ async function createAssetExcel(req: Request, res: Response, next: NextFunction)
 			where: { name: req.body.category },
 		});
 		if (!category) {
-			throw new Error("Danh mục không tồn tại");
+			return res.status(404).json("Category does not exist");
 		} else {
 			const serial = Math.random().toString(36).replace(".", "").toUpperCase().substring(6);
 			const checkAsset = await AppDataSource.getRepository(Asset)
@@ -97,7 +68,7 @@ async function createAssetExcel(req: Request, res: Response, next: NextFunction)
 				.where("asset.serial = :serial", { serial: serial })
 				.getOne();
 			if (checkAsset) {
-				throw new Error("Mã số serial đã tồn tại");
+				throw new Error("Serial Number already exists");
 			} else {
 				const data = {
 					serial: serial,
@@ -108,10 +79,9 @@ async function createAssetExcel(req: Request, res: Response, next: NextFunction)
 					description: req.body.description,
 				};
 				const asset = await AppDataSource.getRepository(Asset).create(data);
-				//asset.categoryAsset = category;
 				const result = await AppDataSource.getRepository(Asset).save(asset);
 				return res.status(200).json({
-					message: "Import và thêm mới tài sản thành công",
+					message: "Create asset successfully",
 					result,
 				});
 			}
@@ -121,72 +91,66 @@ async function createAssetExcel(req: Request, res: Response, next: NextFunction)
 	}
 }
 
-//thêm mới tài sản
 async function createAsset(req: Request, res: Response, next: NextFunction) {
 	try {
 		let serial;
 		let checkAsset;
 		do {
 			serial = Math.random().toString(36).replace(".", "").toUpperCase().substring(6);
-			checkAsset = await AppDataSource.getRepository(Asset)
-				.createQueryBuilder("asset")
-				.where("asset.serial = :serial AND asset.isDeleted = :isDeleted", { serial: serial, isDeleted: false })
-				.getOne();
+			checkAsset = await AppDataSource.getRepository(Asset).findOne({
+				where: { serial, isDeleted: false },
+			});
 		} while (checkAsset);
-		const data = {
-			name: req.body.name,
-			serial: serial,
-			status: req.body.status,
-			type: req.body.type,
-			categoryAssetId: req.body.categoryId,
-			description: req.body.description,
-		};
-
+		const { name, status, type, categoryId, description } = req.body;
 		const category = await AppDataSource.getRepository(CategoryAsset).findOne({
-			where: { id: req.body.categoryId, isDeleted: false },
+			where: { id: categoryId, isDeleted: false },
 		});
 		if (!category) {
 			return res.status(404).json({ message: "Category does not exist" });
-		} else {
-			const asset = await AppDataSource.getRepository(Asset).create(data);
-			const result = await AppDataSource.getRepository(Asset).save(asset);
-			const token = req.headers.authorization.split(" ")[1];
-			const decoded = jsonwebtoken.decode(token) as payload;
-			switch (req.body.status) {
-				case "Deployed": {
-					const assetCreateDeployed = {
-						assetId: result.id,
-						userId: decoded.id,
-						allocationStatus: "Allocated",
-					};
-					const assetAllocatedAlready = await AppDataSource.getRepository(Allocation).create(
-						assetCreateDeployed
-					);
-					await AppDataSource.getRepository(Allocation).save(assetAllocatedAlready);
-					break;
-				}
-				case "Error": {
-					const assetCreateError = {
-						assetId: result.id,
-						userId: decoded.id,
-						status: "Processing",
-					};
-					const assetErrorAlready = await AppDataSource.getRepository(ErrorAsset).create(assetCreateError);
-					await AppDataSource.getRepository(ErrorAsset).save(assetErrorAlready);
-					break;
-				}
-			}
-			return res.status(201).json({
-				message: "Asset is created successfully",
-				result,
-			});
 		}
+		const assetData = {
+			name,
+			serial,
+			status,
+			type,
+			categoryAssetId: categoryId,
+			description,
+		};
+		const asset = await AppDataSource.getRepository(Asset).create(assetData);
+		const result = await AppDataSource.getRepository(Asset).save(asset);
+		const token = req.headers.authorization.split(" ")[1];
+		const decoded = jsonwebtoken.decode(token) as payload;
+		switch (status) {
+			case "Deployed": {
+				const assetCreateDeployed = {
+					assetId: result.id,
+					userId: decoded.id,
+					allocationStatus: "Allocated",
+				};
+				const assetAllocatedAlready = await AppDataSource.getRepository(Allocation).create(assetCreateDeployed);
+				await AppDataSource.getRepository(Allocation).save(assetAllocatedAlready);
+				break;
+			}
+			case "Error": {
+				const assetCreateError = {
+					assetId: result.id,
+					userId: decoded.id,
+					status: "Processing",
+				};
+				const assetErrorAlready = await AppDataSource.getRepository(ErrorAsset).create(assetCreateError);
+				await AppDataSource.getRepository(ErrorAsset).save(assetErrorAlready);
+				break;
+			}
+		}
+		return res.status(201).json({
+			message: "Asset is created successfully",
+			result,
+		});
 	} catch (err) {
 		return next(err);
 	}
 }
 
-//sửa tài sản
 async function updateAsset(req: Request, res: Response, next: NextFunction) {
 	try {
 		const data = {
@@ -284,11 +248,8 @@ async function allocationAsset(req: Request, res: Response, next: NextFunction) 
 						allocationDate: req.body.allocationDate,
 						returnDate: req.body.returnDate,
 					};
-					console.log(`Request Data: ${data.allocationDate}`);
 					const allocation = await AppDataSource.getRepository(Allocation).create(data);
-					console.log(`Allocation Data: ${allocation.allocationDate}`);
 					const result = await AppDataSource.getRepository(Allocation).save(allocation);
-					console.log(`Result Data: ${result.allocationDate}`);
 					return res.status(201).json({
 						message: "Request sent successfully",
 						result,
@@ -384,11 +345,15 @@ async function returnAsset(req: Request, res: Response, next: NextFunction) {
 			const checkAsset = await AppDataSource.getRepository(Asset).findOne({
 				where: { id: checkRequest.assetId },
 			});
-			if (checkAsset.status === "Deployed" && checkRequest.allocationStatus === "Allocated") {
+			if (
+				checkAsset.status === "Deployed" &&
+				checkRequest.allocationStatus === "Allocated" &&
+				req.body.allocationStatus === "Waiting to Approve"
+			) {
 				await AppDataSource.createQueryBuilder()
 					.update(Allocation)
 					.set({
-						allocationStatus: "Waiting to Approve",
+						allocationStatus: req.body.allocationStatus,
 					})
 					.where("id = :id", { id: req.params.requestId })
 					.execute();
@@ -408,7 +373,6 @@ async function verifyReturn(req: Request, res: Response, next: NextFunction) {
 		const existingRequest = await AppDataSource.getRepository(Allocation).findOne({
 			where: { id: req.params.requestId },
 		});
-		console.log(existingRequest);
 		if (!existingRequest) {
 			return res.status(404).json({ message: "Request does not exist" });
 		} else {
@@ -442,9 +406,10 @@ async function verifyReturn(req: Request, res: Response, next: NextFunction) {
 
 async function getAllocation(req: Request, res: Response, next: NextFunction) {
 	try {
-		const limit = req.query.limit ? parseInt(req.query.limit as string) : 15;
-		const offset = req.query.offset ? parseInt(req.query.offset as string) : 0;
+		const limit = parseInt(req.query.limit as string) || 15;
+		const offset = parseInt(req.query.offset as string) || 0;
 		let allocation;
+		const allocationTotal = await AppDataSource.getRepository(Allocation).count();
 		if (req.query.userId) {
 			allocation = await AppDataSource.getRepository(Allocation)
 				.createQueryBuilder("allocation")
@@ -473,14 +438,13 @@ async function getAllocation(req: Request, res: Response, next: NextFunction) {
 				.take(limit)
 				.skip(offset)
 				.getMany();
-			return res.status(200).json(allocation);
 		}
+		return res.status(200).json({ allocationTotal, allocation });
 	} catch (err) {
 		next(err);
 	}
 }
 
-// Thông báo tài sản gặp sự cố
 async function errorAsset(req: Request, res: Response, next: NextFunction) {
 	try {
 		const assetId = await AppDataSource.getRepository(Asset).findOne({
@@ -499,7 +463,7 @@ async function errorAsset(req: Request, res: Response, next: NextFunction) {
 			const errorForm = await AppDataSource.getRepository(ErrorAsset).create(data);
 			const result = await AppDataSource.getRepository(ErrorAsset).save(errorForm);
 			// todo: send email to admin to notify there is an asset get an error or issue
-			return res.status(201).json({ messsage: "Report error successfully", result });
+			return res.status(201).json({ message: "Report error successfully", result });
 		} else {
 			return res.status(404).json({ message: "Asset does not exist" });
 		}
@@ -520,50 +484,15 @@ async function verifyReport(req: Request, res: Response, next: NextFunction) {
 				return res.status(422).json({ message: "Report is already fixed or approved" });
 			} else {
 				if (req.body.status === "Approved") {
-					await AppDataSource.createQueryBuilder()
-						.update(Asset)
-						.set({
-							status: "Error",
-						})
-						.where("id = :id", { id: existingRequest.assetId })
-						.execute();
-					await AppDataSource.createQueryBuilder()
-						.update(ErrorAsset)
-						.set({
-							status: "Approved",
-						})
-						.where("id = :id", { id: req.params.requestId })
-						.execute();
-					await AppDataSource.createQueryBuilder()
-						.update(Allocation)
-						.set({
-							allocationStatus: "Returned",
-						})
-						.where("assetId = :assetId AND allocationStatus = :allocationStatus", {
-							assetId: existingRequest.assetId,
-							allocationStatus: "Allocated",
-						})
-						.execute();
-					await AppDataSource.createQueryBuilder()
-						.update(Allocation)
-						.set({
-							allocationStatus: "Rejected",
-						})
-						.where("assetId = :assetId AND allocationStatus = :allocationStatus", {
-							assetId: existingRequest.assetId,
-							allocationStatus: "Pending",
-						})
-						.execute();
+					await AppDataSource.getRepository(Asset).update(existingRequest.assetId, { status: "Error" });
+					await AppDataSource.getRepository(ErrorAsset).update(req.params.requestId, {
+						status: req.body.status,
+					});
 					return res.status(200).json({ message: "Error approve successfully" });
-					// todo: send email to user to notify that admin has receive the mail and approve that it is an error or issue
 				} else if (req.body.status === "Disapproved") {
-					await AppDataSource.createQueryBuilder()
-						.update(ErrorAsset)
-						.set({
-							status: "Disapproved",
-						})
-						.where("id = :id", { id: req.params.requestId })
-						.execute();
+					await AppDataSource.getRepository(ErrorAsset).update(req.params.requestId, {
+						status: req.body.status,
+					});
 					return res.status(200).json({ message: "Error disapproved" });
 				}
 			}
@@ -580,43 +509,52 @@ async function fixError(req: Request, res: Response, next: NextFunction) {
 			return res.status(404).json({ message: "Error report does not exist" });
 		} else {
 			if (checkError.status === "Approved") {
-				await AppDataSource.createQueryBuilder()
-					.update(ErrorAsset)
-					.set({
-						status: "Fixed",
-					})
-					.where("id = :id", { id: req.params.errorId })
-					.execute();
-				await AppDataSource.createQueryBuilder()
-					.update(Asset)
-					.set({
-						status: "Ready to Deploy",
-					})
-					.where("id = :id", { id: checkError.assetId })
-					.execute();
+				await AppDataSource.getRepository(ErrorAsset).update(req.params.errorId, { status: "Ready to Deploy" });
+				await AppDataSource.getRepository(Asset).update(checkError.assetId, { status: "Ready to Deploy" });
 				return res.status(200).json({ message: "Error fixed successfully" });
-			} else {
-				return res.status(422).json({ message: "Error is already fixed or disapproved or not yet approved" });
 			}
+			return res.status(422).json({ message: "Error is already fixed or disapproved or not yet approved" });
 		}
 	} catch (err) {
 		next(err);
 	}
 }
 
-// Lấy về danh sách tài sản bị lỗi kèm tên tài sản
 async function getDetailError(req: Request, res: Response, next: NextFunction) {
 	try {
-		const limit = req.query.limit ? parseInt(req.query.limit as string) : 15;
-		const offset = req.query.offset ? parseInt(req.query.offset as string) : 0;
+		const limit = parseInt(req.query.limit as string) || 15;
+		const offset = parseInt(req.query.offset as string) || 0;
+		const errorTotal = await AppDataSource.getRepository(ErrorAsset).count();
 		const errorData = await AppDataSource.getRepository(ErrorAsset)
 			.createQueryBuilder("errorAsset")
-			.leftJoin("errorAsset.asset", "asset")
-			.where("asset.isDeleted = :isDeleted", { isDeleted: false })
+			.innerJoinAndSelect("errorAsset.asset", "asset", "asset.isDeleted = :isDeleted", { isDeleted: false })
 			.take(limit)
 			.skip(offset)
 			.getMany();
-		return res.status(200).json(errorData);
+		return res.status(200).json({ errorTotal, errorData });
+	} catch (err) {
+		next(err);
+	}
+}
+
+async function getStatistic(req: Request, res: Response, next: NextFunction) {
+	try {
+		const limit = parseInt(req.query.limit as string) || 15;
+		const offset = parseInt(req.query.offset as string) || 0;
+		const assetTotal = await AppDataSource.getRepository(Asset).count();
+		const assetStatistics = await AppDataSource.getRepository(Asset)
+			.createQueryBuilder("asset")
+			.leftJoin("asset.allocation", "allocation")
+			.leftJoin("asset.errorAsset", "errorAsset")
+			.select(["asset.id AS id", "asset.name AS name"])
+			.addSelect("COUNT(allocation.assetId)", "timeRequested")
+			.addSelect("COUNT(errorAsset.assetId)", "timeReported")
+			.where("asset.isDeleted = :isDeleted", { isDeleted: false })
+			.take(limit)
+			.skip(offset)
+			.groupBy("asset.id")
+			.getRawMany();
+		return res.status(200).json({ assetTotal, assetStatistics });
 	} catch (err) {
 		next(err);
 	}
@@ -637,6 +575,7 @@ const crudAsset = {
 	fixError,
 	verifyReport,
 	verifyReturn,
+	getStatistic,
 };
 
 export default crudAsset;

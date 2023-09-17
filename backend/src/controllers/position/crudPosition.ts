@@ -21,10 +21,12 @@ async function createPosition(req: Request, res: Response, next: NextFunction) {
 	}
 }
 
-async function getPosition(req: Request, res: Response, next: NextFunction) {
+async function getPosition(_req: Request, res: Response, next: NextFunction) {
 	try {
-		const result = await AppDataSource.getRepository(Position).find({ where: { isDeleted: false } });
-		return res.status(200).json(result);
+		const [position, positionTotal] = await AppDataSource.getRepository(Position).findAndCount({
+			where: { isDeleted: false },
+		});
+		return res.status(200).json({ positionTotal, position });
 	} catch (err) {
 		return next(err);
 	}

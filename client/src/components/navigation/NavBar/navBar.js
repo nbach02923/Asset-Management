@@ -34,7 +34,8 @@ const NavBar = () => {
 					<TextField
 						variant="outlined"
 						size="small"
-						placeholder="Search by Asset Name"
+						placeholder="Search by Asset Name or Asset Serial"
+						sx={{ width: "400px" }}
 						InputProps={{
 							startAdornment: (
 								<InputAdornment position="start">

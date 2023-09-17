@@ -11,7 +11,9 @@ import User from "./pages/user/user";
 import Department from "./pages/department/department";
 import Position from "./pages/position/position";
 import Profile from "./pages/profile/profile";
-import Allocation from "./pages/allocation/allocation"
+import Allocation from "./pages/allocation/allocation";
+import Error from "./pages/error/error";
+import Statistics from "./pages/statistics/statistics";
 
 function App() {
 	return (
@@ -28,6 +30,8 @@ function App() {
 						<Route path="/system/position" element={<Position />} />
 						<Route path="/profile" element={<Profile />} />
 						<Route path="/register/assetAllocation" element={<Allocation />} />
+						<Route path="/register/assetReport" element={<Error />} />
+						<Route path="/statistics" element={<Statistics />} />
 					</Route>
 				</Route>
 			</Routes>

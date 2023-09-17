@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import API from "../../services/request";
 import createAllField from "../../utils/field";
 
-export function useDepartmentState() {
+const useDepartmentState = () => {
 	const [data, setData] = useState([]);
 	const [tableHeader, setTableHeader] = useState([]);
 	const [open, setOpen] = useState(false);
@@ -17,6 +17,8 @@ export function useDepartmentState() {
 	const [responseMessage, setResponseMessage] = useState("");
 	const [errorStatusCode, setErrorStatusCode] = useState(null);
 	const [updateData, setUpdateData] = useState(false);
+	const [total, setTotal] = useState(0);
+	const [currentPage, setCurrentPage] = useState(0);
 	const headers = useMemo(() => {
 		return {
 			"Content-Type": "application/json",
@@ -108,13 +110,14 @@ export function useDepartmentState() {
 	}, [open, selectedName]);
 	useEffect(() => {
 		const querys = {
-			limit: 1000,
+			offset: 15 * currentPage,
 		};
 		API.getAPI("/department", headers, querys).then((response) => {
 			const department = response.data;
 			const customHeaders = ["Department Name", "Number of member"];
 			setTableHeader(customHeaders);
-			const customData = department.map((item) => {
+			setTotal(department.departmentTotal);
+			const customData = department.department.map((item) => {
 				return {
 					id: item.id,
 					name: item.name,
@@ -123,7 +126,7 @@ export function useDepartmentState() {
 			});
 			setData(customData);
 		});
-	}, [headers, updateData]);
+	}, [headers, updateData, currentPage]);
 	return {
 		data,
 		tableHeader,
@@ -146,5 +149,9 @@ export function useDepartmentState() {
 		errorStatusCode,
 		setErrorStatusCode,
 		handleClose,
+		total,
+		currentPage,
+		setCurrentPage,
 	};
-}
+};
+export default useDepartmentState;

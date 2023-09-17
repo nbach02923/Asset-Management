@@ -1,10 +1,10 @@
-import { Container } from "@mui/material";
 import React from "react";
+import { Container } from "@mui/material";
 import DataTable from "../../components/dataTable";
-import useAllocationState from "./useAllocationState";
+import useErrorState from "./useErrorState";
 import ModalComponent from "../../components/modal";
 
-const Allocation = () => {
+const Error = () => {
 	const {
 		data,
 		tableHeader,
@@ -18,16 +18,17 @@ const Allocation = () => {
 		total,
 		currentPage,
 		setCurrentPage,
-	} = useAllocationState();
+	} = useErrorState();
 	return (
 		<Container>
 			<DataTable
-				title="Allocation Request Table"
-				data={data}
+				title="Error Report Table"
 				headers={tableHeader}
+				data={data}
 				handleActionOnClick={{
 					edit: handleEdit,
 				}}
+				columnWidths={[150, 80, 130]}
 				shouldRenderEditButton={shouldRenderEditButton}
 				total={total}
 				currentPage={currentPage}
@@ -37,4 +38,4 @@ const Allocation = () => {
 		</Container>
 	);
 };
-export default Allocation;
+export default Error;

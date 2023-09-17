@@ -11,8 +11,17 @@ import { ExpandLess, ExpandMore } from "@mui/icons-material";
 import CloseIcon from "@mui/icons-material/Close";
 import { Link } from "react-router-dom";
 import logo from "../../../logo.svg";
+import decodeJWT from "../../../utils/decodeJWT";
 
 const SideBar = ({ open, setOpen }) => {
+	const userRole = decodeJWT().role;
+	const filteredListItems = listItems.filter((item) => {
+		if (userRole) {
+			return true;
+		} else {
+			return !["Registration Management", "Statistics", "System Management"].includes(item.text);
+		}
+	});
 	const [openItems, setOpenItems] = useState({});
 	const handleOpenItem = (item) => {
 		setOpenItems((prevOpenItems) => ({
@@ -33,7 +42,7 @@ const SideBar = ({ open, setOpen }) => {
 		SettingsApplicationsIcon: <SettingsApplicationsIcon />,
 	};
 	return (
-		<Drawer open={open} onClose={handleClose} PaperProps={{ sx: { bgcolor: "#010d8a" } }}>
+		<Drawer open={open} onClose={handleClose} PaperProps={{ sx: { bgcolor: "#010d8a", width: "290px" } }}>
 			<Box sx={{ display: "flex", justifyContent: "space-between", p: 2, alignItems: "center" }}>
 				<IconButton onClick={handleClose}>
 					<CloseIcon sx={{ color: "white", float: "right" }} />
@@ -43,7 +52,7 @@ const SideBar = ({ open, setOpen }) => {
 				</Box>
 			</Box>
 			<List>
-				{listItems.map((item) => (
+				{filteredListItems.map((item) => (
 					<React.Fragment key={item.index}>
 						<ListItemButton
 							component={Link}

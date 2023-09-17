@@ -96,7 +96,8 @@ async function getUserData(req: Request, res: Response, next: NextFunction) {
 				])
 				.getMany();
 		}
-		return res.status(200).json(user);
+		const userTotal = await AppDataSource.getRepository(UserAccount).count({ where: { isDeleted: false } });
+		return res.status(200).json({ userTotal, user });
 	} catch (err) {
 		return next(err);
 	}
@@ -188,7 +189,7 @@ async function create(req: Request, res: Response, next: NextFunction) {
 					positionCode: req.body.positionCode,
 					departmentId: req.body.departmentId,
 				};
-				const newUser = await AppDataSource.getRepository(UserAccount).create(data);
+				const newUser = AppDataSource.getRepository(UserAccount).create(data);
 				const result = await AppDataSource.getRepository(UserAccount).save(newUser);
 				await AppDataSource.createQueryBuilder()
 					.insert()
@@ -300,7 +301,7 @@ async function changePassword(req: Request, res: Response, next: NextFunction) {
 		if (!checkUser) {
 			return res.status(404).json({ message: "User account does exist" });
 		} else {
-			const checkPassword = await compareSync(req.body.password, checkUser.password);
+			const checkPassword = compareSync(req.body.password, checkUser.password);
 			if (!checkPassword) {
 				return res.status(400).json({ message: "Current account password incorrect" });
 			} else {

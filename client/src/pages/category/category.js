@@ -25,6 +25,9 @@ const Category = () => {
 		setShowError,
 		setShowSuccess,
 		setShowWarning,
+		total,
+		currentPage,
+		setCurrentPage,
 	} = useCategoryState();
 	return (
 		<Container>
@@ -37,6 +40,9 @@ const Category = () => {
 					edit: handleEdit,
 					delete: handleDelete,
 				}}
+				total={total}
+				currentPage={currentPage}
+				setCurrentPage={setCurrentPage}
 			/>
 			<ModalComponent open={open} handleClose={handleClose} title={title} fields={fields} handleAPI={handleAPI} />
 			<Popup.WarningPopup

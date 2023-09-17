@@ -38,7 +38,7 @@
         "index": 5,
         "text": "Statistics",
         "icon": "QueryStatsIcon",
-        "route": "/statistic"
+        "route": "/statistics"
     },
     {
         "index": 6,

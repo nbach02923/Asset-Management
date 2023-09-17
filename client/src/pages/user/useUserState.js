@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import API from "../../services/request";
 import createAllField from "../../utils/field";
 
-export default function useUserState() {
+const useUserState = () => {
 	const [data, setData] = useState([]);
 	const [tableHeader, setTableHeader] = useState([]);
 	const [open, setOpen] = useState(false);
@@ -288,4 +288,5 @@ export default function useUserState() {
 		setShowSuccess,
 		currentAction,
 	};
-}
+};
+export default useUserState;

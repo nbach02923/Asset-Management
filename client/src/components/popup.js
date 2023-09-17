@@ -69,7 +69,7 @@ const WarningPopup = ({ open, handleClose, handleOk, message }) => {
 		<Dialog
 			open={open}
 			onClose={handleClose}
-			PaperProps={{ sx: { bgcolor: "#fc8621", borderRadius: 2 } }}
+			PaperProps={{ sx: { width: "200px", bgcolor: "#fc8621", borderRadius: 2 } }}
 			TransitionComponent={Transition}>
 			<DialogTitle sx={{ textAlign: "center" }}>
 				<Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", color: "white" }}>
@@ -80,14 +80,14 @@ const WarningPopup = ({ open, handleClose, handleOk, message }) => {
 					<CloseIcon />
 				</IconButton>
 			</DialogTitle>
-			<DialogContent>
+			<DialogContent sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
 				<DialogContentText sx={{ color: "white" }}>{message}</DialogContentText>
 			</DialogContent>
-			<DialogActions>
-				<Button sx={{ color: "white" }} onClick={handleOk}>
+			<DialogActions sx={{ display: "flex", justifyContent: "space-evenly" }}>
+				<Button sx={{ color: "white" }} size="small" onClick={handleOk}>
 					Ok
 				</Button>
-				<Button sx={{ color: "white" }} onClick={handleClose}>
+				<Button sx={{ color: "white" }} size="small" onClick={handleClose}>
 					No
 				</Button>
 			</DialogActions>

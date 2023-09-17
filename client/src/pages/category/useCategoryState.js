@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import API from "../../services/request";
 import createAllField from "../../utils/field";
 
-export default function useCategoryState() {
+const useCategoryState = () => {
 	const [data, setData] = useState([]);
 	const [tableHeader, setTableHeader] = useState([]);
 	const [open, setOpen] = useState(false);
@@ -17,6 +17,8 @@ export default function useCategoryState() {
 	const [responseMessage, setResponseMessage] = useState("");
 	const [errorStatusCode, setErrorStatusCode] = useState(null);
 	const [updateData, setUpdateData] = useState(false);
+	const [total, setTotal] = useState(0);
+	const [currentPage, setCurrentPage] = useState(0);
 	const headers = useMemo(() => {
 		return {
 			"Content-Type": "application/json",
@@ -107,13 +109,14 @@ export default function useCategoryState() {
 	}, [open, selectedName]);
 	useEffect(() => {
 		const querys = {
-			limit: 1000,
+			offset: 15 * currentPage,
 		};
 		API.getAPI("/categoryAsset", headers, querys).then((response) => {
 			const category = response.data;
 			const customHeaders = ["Category Name", "Asset Quantity"];
 			setTableHeader(customHeaders);
-			const customData = category.map((item) => {
+			setTotal(category.categoryTotal);
+			const customData = category.category.map((item) => {
 				return {
 					id: item.id,
 					name: item.name,
@@ -122,7 +125,7 @@ export default function useCategoryState() {
 			});
 			setData(customData);
 		});
-	}, [headers, updateData]);
+	}, [headers, updateData, currentPage]);
 	return {
 		data,
 		tableHeader,
@@ -143,5 +146,9 @@ export default function useCategoryState() {
 		setShowWarning,
 		errorStatusCode,
 		responseMessage,
+		total,
+		currentPage,
+		setCurrentPage,
 	};
-}
+};
+export default useCategoryState;

@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import API from "../../services/request";
 import createAllField from "../../utils/field";
 
-export default function usePositionState() {
+const usePositionState = () => {
 	const [data, setData] = useState([]);
 	const [tableHeader, setTableHeader] = useState([]);
 	const [open, setOpen] = useState(false);
@@ -17,6 +17,8 @@ export default function usePositionState() {
 	const [responseMessage, setResponseMessage] = useState("");
 	const [errorStatusCode, setErrorStatusCode] = useState(null);
 	const [updateData, setUpdateData] = useState(false);
+	const [total, setTotal] = useState(0);
+	const [currentPage, setCurrentPage] = useState(0);
 	const headers = useMemo(() => {
 		return {
 			"Content-Type": "application/json",
@@ -108,13 +110,14 @@ export default function usePositionState() {
 	}, [open, selectedName]);
 	useEffect(() => {
 		const querys = {
-			limit: 1000,
+			offset: 15 * currentPage,
 		};
 		API.getAPI("/position", headers, querys).then((response) => {
 			const position = response.data;
 			const customHeaders = ["Position Name"];
 			setTableHeader(customHeaders);
-			const customData = position.map((item) => {
+			setTotal(position.positionTotal);
+			const customData = position.position.map((item) => {
 				return {
 					code: item.code,
 					name: item.name,
@@ -122,7 +125,7 @@ export default function usePositionState() {
 			});
 			setData(customData);
 		});
-	}, [headers, updateData]);
+	}, [headers, updateData, currentPage]);
 	return {
 		data,
 		tableHeader,
@@ -145,5 +148,9 @@ export default function usePositionState() {
 		errorStatusCode,
 		setErrorStatusCode,
 		handleClose,
+		total,
+		currentPage,
+		setCurrentPage,
 	};
-}
+};
+export default usePositionState;

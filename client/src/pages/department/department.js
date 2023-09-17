@@ -3,7 +3,7 @@ import { Container } from "@mui/material";
 import DataTable from "../../components/dataTable";
 import ModalComponent from "../../components/modal";
 import Popup from "../../components/popup";
-import { useDepartmentState } from "./useDepartmentState";
+import useDepartmentState from "./useDepartmentState";
 
 const Department = () => {
 	const {
@@ -25,6 +25,9 @@ const Department = () => {
 		setShowError,
 		setShowSuccess,
 		setShowWarning,
+		total,
+		currentPage,
+		setCurrentPage,
 	} = useDepartmentState();
 	return (
 		<Container>
@@ -37,6 +40,9 @@ const Department = () => {
 					edit: handleEdit,
 					delete: handleDelete,
 				}}
+				total={total}
+				currentPage={currentPage}
+				setCurrentPage={setCurrentPage}
 			/>
 			<ModalComponent open={open} handleClose={handleClose} title={title} fields={fields} handleAPI={handleAPI} />
 			<Popup.WarningPopup

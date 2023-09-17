@@ -53,7 +53,7 @@ const ModalComponent = ({ open, handleClose, title, fields = [], handleAPI, isVi
 						bgcolor: "white",
 						boxShadow: 24,
 						p: 4,
-						width: "300px",
+						width: "350px",
 						maxHeight: "calc(100vh - 64px)",
 						overflow: "auto",
 					}}>

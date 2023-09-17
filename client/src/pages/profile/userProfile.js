@@ -118,18 +118,18 @@ const UserProfile = () => {
 				const departmentData = departmentResponse.data;
 				setDepartment(departmentData);
 				const departmentMap = {};
-				departmentData.forEach((department) => {
+				departmentData.department.forEach((department) => {
 					departmentMap[department.id] = department.name;
 				});
 				const customData = {
-					"Full Name": userData.userInformation?.fullName ?? "",
-					"User Name": userData.userName,
-					Email: userData.userInformation?.email ?? "",
-					"Phone Number": userData.userInformation?.phoneNumber ?? "",
-					"Date of Birth": userData.userInformation?.dateOfBirth ?? "",
+					"Full Name": userData.user.userInformation?.fullName ?? "",
+					"User Name": userData.user.userName,
+					Email: userData.user.userInformation?.email ?? "",
+					"Phone Number": userData.user.userInformation?.phoneNumber ?? "",
+					"Date of Birth": userData.user.userInformation?.dateOfBirth ?? "",
 					Department: departmentMap[userData.departmentId],
 				};
-				setUserAvatar(userData.userInformation?.avatarPath);
+				setUserAvatar(userData.user.userInformation?.avatarPath);
 				setData(customData);
 				setInitialData(customData);
 			}

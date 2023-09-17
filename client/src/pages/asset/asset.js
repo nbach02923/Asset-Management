@@ -27,6 +27,10 @@ const Asset = () => {
 		errorStatusCode,
 		errorMessage,
 		currentAction,
+		shouldRenderEditButton,
+		total,
+		currentPage,
+		setCurrentPage,
 	} = useAssetState();
 	return (
 		<Container>
@@ -42,6 +46,10 @@ const Asset = () => {
 				}}
 				columnWidths={[200, 124]}
 				actionsColumnWidth={120}
+				shouldRenderEditButton={shouldRenderEditButton}
+				total={total}
+				currentPage={currentPage}
+				setCurrentPage={setCurrentPage}
 			/>
 			<ModalComponent
 				open={open}

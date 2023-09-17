@@ -7,26 +7,28 @@ async function getAll(req: Request, res: Response, next: NextFunction) {
 		const limit = req.query.limit ? parseInt(req.query.limit as string) : 15;
 		const offset = req.query.offset ? parseInt(req.query.offset as string) : 0;
 		let department;
-		if (req.query.id) {
-			const checkDepartment = await AppDataSource.getRepository(Department).findOne({
-				where: { id: req.query.id as string, isDeleted: false },
+		const departmentId = req.body.id as string;
+		const departmentRepository = AppDataSource.getRepository(Department);
+		if (departmentId) {
+			const checkDepartment = await departmentRepository.findOne({
+				where: { id: departmentId, isDeleted: false },
 			});
 			if (!checkDepartment) {
 				return res.status(404).json({ message: "Department does not exist" });
 			} else {
-				department = await AppDataSource.getRepository(Department)
+				department = await departmentRepository
 					.createQueryBuilder("department")
 					.leftJoinAndSelect("department.user", "user")
 					.select(["department.id as id", "department.name as name"])
 					.addSelect("COUNT(user.id)", "userCount")
 					.where("department.id = :id AND department.isDeleted = :isDeleted", {
-						id: req.query.id as string,
+						id: departmentId,
 						isDeleted: false,
 					})
 					.getRawOne();
 			}
 		} else {
-			department = await AppDataSource.getRepository(Department)
+			department = await departmentRepository
 				.createQueryBuilder("department")
 				.leftJoinAndSelect("department.user", "user")
 				.select(["department.id as id", "department.name as name"])
@@ -37,7 +39,8 @@ async function getAll(req: Request, res: Response, next: NextFunction) {
 				.groupBy("department.id")
 				.getRawMany();
 		}
-		return res.status(200).json(department);
+		const departmentTotal = await departmentRepository.count({ where: { isDeleted: false } });
+		return res.status(200).json({ departmentTotal, department });
 	} catch (err) {
 		return next(err);
 	}
@@ -56,7 +59,7 @@ async function createDepartment(req: Request, res: Response, next: NextFunction)
 		} else {
 			const departmentNew = await AppDataSource.getRepository(Department).create(data);
 			const result = await AppDataSource.getRepository(Department).save(departmentNew);
-			return res.status(201).send({ message: `Phòng ban được thêm thành công`, result });
+			return res.status(201).send({ message: "Department create succesfully", result });
 		}
 	} catch (err) {
 		return next(err);

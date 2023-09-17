@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import API from "../../services/request";
 import createAllField from "../../utils/field";
 
-export default function useAllocationState() {
+const useAllocationState = () => {
 	const [data, setData] = useState([]);
 	const [tableHeader, setTableHeader] = useState([]);
 	const [open, setOpen] = useState(false);
@@ -10,12 +10,14 @@ export default function useAllocationState() {
 	const [fields, setFields] = useState([]);
 	const [selectedId, setSelectedId] = useState("");
 	const [currentAction, setCurrentAction] = useState(null);
-	const [selectedAsset, setSelectedAsset] = useState("");
-	const [selectedUser, setSelectedUser] = useState("");
-	const [selectedAllocationDate, setSelectedAllocationDate] = useState("");
-	const [selectedReturnDate, setSelectedReturnDate] = useState("");
+	const [, setSelectedAsset] = useState("");
+	const [, setSelectedUser] = useState("");
+	const [, setSelectedAllocationDate] = useState("");
+	const [, setSelectedReturnDate] = useState("");
 	const [selectedAllocationStatus, setSelectedAllocationStatus] = useState("");
 	const [updateData, setUpdateData] = useState(false);
+	const [total, setTotal] = useState(0);
+	const [currentPage, setCurrentPage] = useState(0);
 	const headers = useMemo(() => {
 		return {
 			"Content-Type": "application/json",
@@ -25,30 +27,27 @@ export default function useAllocationState() {
 	}, []);
 	useEffect(() => {
 		Promise.all([
-			API.getAPI("/asset/allocation", headers, { limit: 1000 }),
+			API.getAPI("/asset/allocation", headers, { offset: 15 * currentPage }),
 			API.getAPI("/asset", headers, { limit: 1000 }),
 			API.getAPI("/user", headers, { limit: 1000 }),
 		]).then(([allocationResponse, assetResponse, userResponse]) => {
 			const allocationData = allocationResponse.data;
 			const assetData = assetResponse.data;
 			const assetMap = {};
-			assetData.forEach((asset) => {
+			assetData.asset.forEach((asset) => {
 				assetMap[asset.id] = asset.name;
 			});
 			const userData = userResponse.data;
 			const userMap = {};
-			userData.forEach((user) => {
+			userData.user.forEach((user) => {
 				userMap[user.id] = user.userName;
 			});
-			const customData = allocationData.map((item) => {
+			setTotal(allocationData.allocationTotal);
+			const customData = allocationData.allocation.map((item) => {
 				const allocationDate = new Date(item.allocationDate);
 				const returnDate = new Date(item.returnDate);
-				const formattedAllocationDate = `${allocationDate.getUTCHours()}:${allocationDate.getUTCMinutes()}:${allocationDate.getUTCSeconds()} ${allocationDate.getUTCDate()}/${
-					allocationDate.getUTCMonth() + 1
-				}/${allocationDate.getUTCFullYear()}`;
-				const formattedReturnDate = `${returnDate.getUTCHours()}:${returnDate.getUTCMinutes()}:${returnDate.getUTCSeconds()} ${returnDate.getUTCDate()}/${
-					returnDate.getUTCMonth() + 1
-				}/${returnDate.getUTCFullYear()}`;
+				const formattedAllocationDate = allocationDate.toLocaleString("vi-vn");
+				const formattedReturnDate = returnDate.toLocaleString("vi-vn");
 				return {
 					id: item.id,
 					asset: assetMap[item.assetId],
@@ -62,7 +61,7 @@ export default function useAllocationState() {
 			const customHeader = ["Asset Name", "User Account", "Request Status", "Allocation Date", "Return Date"];
 			setTableHeader(customHeader);
 		});
-	}, [headers, updateData]);
+	}, [headers, updateData, currentPage]);
 	const handleClose = () => {
 		setOpen(false);
 	};
@@ -76,7 +75,12 @@ export default function useAllocationState() {
 			createAllField.createField("Allocation Date", "text", row.allocationDate, setSelectedAllocationDate, true),
 			createAllField.createField("Return Date", "text", row.returnDate, setSelectedReturnDate, true),
 		];
-		const verifyOptions = row.allocationStatus === "Pending" ? ["Allocated", "Rejected"] : ["Returned"];
+		const verifyOptionsMap = {
+			Pending: ["Allocated", "Rejected"],
+			Allocated: ["Return Request"],
+			"Waiting to Approve": ["Returned"],
+		};
+		const verifyOptions = verifyOptionsMap[row.allocationStatus] || [];
 		const verifyField = createAllField.createRadioField(
 			"Verify",
 			verifyOptions,
@@ -91,12 +95,17 @@ export default function useAllocationState() {
 	const handleAPI = () => {
 		return new Promise((resolve, reject) => {
 			if (currentAction === "edit") {
-				const url =
-					selectedAllocationStatus === "Returned"
-						? `/asset/verifyReturn/${selectedId}`
-						: `/asset/verifyAsset/${selectedId}`;
+				const urlMap = {
+					Returned: `/asset/verifyReturn/${selectedId}`,
+					"Return Request": `/asset/returnAsset/${selectedId}`,
+					Allocated: `/asset/verifyAsset/${selectedId}`,
+					Rejected: `/asset/verifyAsset/${selectedId}`,
+				};
+				const url = urlMap[selectedAllocationStatus];
 				const payload =
-					selectedAllocationStatus === "Returned" ? null : { allocationStatus: selectedAllocationStatus };
+					selectedAllocationStatus === "Return Request"
+						? { allocationStatus: "Waiting to Approve" }
+						: { allocationStatus: selectedAllocationStatus };
 				API.patchAPI(url, headers, payload)
 					.then((response) => {
 						resolve(response);
@@ -109,7 +118,7 @@ export default function useAllocationState() {
 		});
 	};
 	const shouldRenderEditButton = (row) => {
-		return !["Allocated", "Rejected", "Returned"].includes(row.allocationStatus);
+		return !["Rejected", "Returned"].includes(row.allocationStatus);
 	};
 	return {
 		data,
@@ -122,5 +131,9 @@ export default function useAllocationState() {
 		currentAction,
 		handleAPI,
 		shouldRenderEditButton,
+		total,
+		currentPage,
+		setCurrentPage,
 	};
-}
+};
+export default useAllocationState;

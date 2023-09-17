@@ -11,15 +11,15 @@ app.use(cors());
 app.use(helmet());
 app.use(express.json());
 app.use(morgan("dev"));
-app.use("/api", express.static("./src/controllers/uploadFile/file/picture/"));
+app.use("/api", express.static("./src/controllers/files/file/picture/"));
 app.use("/api", route);
-app.use(function (req, res, next) {
+app.use(function (_req, res, next) {
 	res.header("Access-Control-Allow-Origin", "*");
 	res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
 	next();
 });
 
-app.use(function (err: Error, req: Request, res: Response, next: NextFunction) {
+app.use(function (err: Error, _req: Request, res: Response, next: NextFunction) {
 	next(err);
 	if (err instanceof ValidationError) {
 		return res.status(err.statusCode).json(err);

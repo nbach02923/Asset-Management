@@ -8,13 +8,13 @@ import {
 	TableBody,
 	TableCell,
 	TableContainer,
-	TableFooter,
 	TableHead,
-	TablePagination,
+	Pagination,
 	TableRow,
 	TextField,
 	Typography,
 	IconButton,
+	PaginationItem,
 } from "@mui/material";
 import {
 	AddCircleOutline as AddCircleOutlineIcon,
@@ -22,10 +22,14 @@ import {
 	Edit as EditIcon,
 	Search as SearchIcon,
 	ContentPasteSearch as ContentPasteSearchIcon,
+	Flag as FlagIcon,
 } from "@mui/icons-material";
 import { Zoom } from "@mui/material";
 import Tooltip from "@mui/material/Tooltip";
+import userPermission from "../utils/userPermission";
 
+const EditButton = userPermission(IconButton, [true, false]);
+const DeleteButton = userPermission(IconButton, [true]);
 const DataTable = ({
 	title,
 	headers,
@@ -34,10 +38,13 @@ const DataTable = ({
 	columnWidths,
 	actionsColumnWidth,
 	shouldRenderEditButton = () => true,
+	total,
+	currentPage,
+	setCurrentPage,
 }) => {
 	const [searchTerm, setSearchTerm] = useState("");
 	const [filteredData, setFilteredData] = useState(data);
-	const [page, setPage] = useState(0);
+	const [page] = useState(0);
 	const [originalData, setOriginalData] = useState(data || []);
 	const rowsPerPage = 15;
 	useEffect(() => {
@@ -142,7 +149,7 @@ const DataTable = ({
 												<TableCell
 													key={index}
 													style={{ width: columnWidths && columnWidths[index] }}>
-													{value}
+													{value.length > 40 ? value.substring(0, 40) + "..." : value}
 												</TableCell>
 											))}
 										{handleActionOnClick && (
@@ -150,7 +157,7 @@ const DataTable = ({
 												{handleActionOnClick.edit &&
 													(!shouldRenderEditButton || shouldRenderEditButton(row)) && (
 														<Tooltip title="Edit" TransitionComponent={Zoom}>
-															<IconButton
+															<EditButton
 																onClick={() => handleActionOnClick.edit(row)}
 																sx={{
 																	"&:hover": {
@@ -158,7 +165,7 @@ const DataTable = ({
 																	},
 																}}>
 																<EditIcon />
-															</IconButton>
+															</EditButton>
 														</Tooltip>
 													)}
 												{handleActionOnClick.view && (
@@ -176,7 +183,7 @@ const DataTable = ({
 												)}
 												{handleActionOnClick.delete && (
 													<Tooltip title="Delete" TransitionComponent={Zoom}>
-														<IconButton
+														<DeleteButton
 															onClick={() => handleActionOnClick.delete(row)}
 															sx={{
 																"&:hover": {
@@ -184,6 +191,19 @@ const DataTable = ({
 																},
 															}}>
 															<DeleteIcon />
+														</DeleteButton>
+													</Tooltip>
+												)}
+												{handleActionOnClick.report && (
+													<Tooltip title="Report" TransitionComponent={Zoom}>
+														<IconButton
+															onClick={() => handleActionOnClick.report(row)}
+															sx={{
+																"&:hover": {
+																	color: "#f44336",
+																},
+															}}>
+															<FlagIcon />
 														</IconButton>
 													</Tooltip>
 												)}
@@ -199,21 +219,25 @@ const DataTable = ({
 							</TableRow>
 						)}
 					</TableBody>
-					<TableFooter>
-						<TableRow>
-							<TablePagination
-								rowsPerPageOptions={[]}
-								page={page}
-								rowsPerPage={rowsPerPage}
-								count={filteredData.length}
-								onPageChange={(event, newPage) => {
-									setPage(newPage);
-								}}
-							/>
-						</TableRow>
-					</TableFooter>
 				</Table>
 			</TableContainer>
+			<Pagination
+				sx={{ mt: 1 }}
+				variant="outlined"
+				shape="rounded"
+				color="primary"
+				count={Math.ceil(total / 15)}
+				page={currentPage + 1}
+				onChange={(event, value) => setCurrentPage(value - 1)}
+				renderItem={(item) => (
+					<PaginationItem
+						{...item}
+						disabled={
+							(item.page === 0 && item.type === "previous") || (total <= 15 && item.type === "next")
+						}
+					/>
+				)}
+			/>
 		</>
 	);
 };
