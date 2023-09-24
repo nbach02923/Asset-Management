@@ -60,6 +60,9 @@ router.route("/user/:userId").delete(token.verifyToken, token.checkAdmin,   crud
 //file
 router.route("/upload/:userId").post(token.verifyToken, uploadFile.single("file"), upload.uploadFile)
 
+//misc
+router.route("/recentAct").get(token.verifyToken, token.checkAdmin, crudAsset.getRecentActivities);
+
 //email
 // router.route("/email/sendEmailNotifications").post(token.verifyToken, email.sendEmailNotifications);
 

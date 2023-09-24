@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState } from "react";
 import {
 	Box,
 	Button,
@@ -8,9 +8,6 @@ import {
 	Modal,
 	TextField,
 	Typography,
-	Select,
-	MenuItem,
-	FormControl,
 	Stack,
 	Card,
 	IconButton,
@@ -22,15 +19,8 @@ import API from "../../services/request";
 import decodeJWT from "../../utils/decodeJWT";
 import Popup from "../../components/popup";
 
-const fields = ["Full Name", "User Name", "Email", "Phone Number", "Date of Birth", "Department"];
+const fields = ["Full Name", "User Name", "Email", "Phone Number", "Date of Birth"];
 const UserProfile = () => {
-	const headers = useMemo(() => {
-		return {
-			"Content-Type": "application/json",
-			Authorization: `Bearer ${localStorage.getItem("token")}`,
-			Accept: "application/json",
-		};
-	}, []);
 	const decoded = decodeJWT();
 	const [showSuccess, setShowSuccess] = useState(false);
 	const [showError, setShowError] = useState(false);
@@ -41,7 +31,6 @@ const UserProfile = () => {
 	const [intialData, setInitialData] = useState(null);
 	const [open, setOpen] = useState(false);
 	const [editMode, setEditMode] = useState(false);
-	const [department, setDepartment] = useState("");
 	const [userAvatar, setUserAvatar] = useState(null);
 	const handleOpen = () => setOpen(true);
 	const handleClose = () => {
@@ -90,9 +79,8 @@ const UserProfile = () => {
 			email: data["Email"],
 			phoneNumber: data["Phone Number"],
 			dateOfBirth: data["Date of Birth"],
-			departmentId: department.find((item) => item.name === data["Department"]).id,
 		};
-		API.patchAPI(`/user/${decoded.id}`, headers, payload)
+		API.patchAPI(`/user/${decoded.id}`, payload)
 			.then((response) => {
 				setResponseMessage(response.data.message);
 				setEditMode(false);
@@ -112,29 +100,20 @@ const UserProfile = () => {
 		const query = {
 			id: decoded.id,
 		};
-		Promise.all([API.getAPI("/user", headers, query), API.getAPI("/department", headers)]).then(
-			([userResponse, departmentResponse]) => {
-				const userData = userResponse.data;
-				const departmentData = departmentResponse.data;
-				setDepartment(departmentData);
-				const departmentMap = {};
-				departmentData.department.forEach((department) => {
-					departmentMap[department.id] = department.name;
-				});
-				const customData = {
-					"Full Name": userData.user.userInformation?.fullName ?? "",
-					"User Name": userData.user.userName,
-					Email: userData.user.userInformation?.email ?? "",
-					"Phone Number": userData.user.userInformation?.phoneNumber ?? "",
-					"Date of Birth": userData.user.userInformation?.dateOfBirth ?? "",
-					Department: departmentMap[userData.departmentId],
-				};
-				setUserAvatar(userData.user.userInformation?.avatarPath);
-				setData(customData);
-				setInitialData(customData);
-			}
-		);
-	}, [headers, decoded.id, decoded.departmentId]);
+		API.getAPI("/user", query).then((response) => {
+			const userData = response.data;
+			const customData = {
+				"Full Name": userData.user.userInformation?.fullName ?? "",
+				"User Name": userData.user.userName,
+				Email: userData.user.userInformation?.email ?? "",
+				"Phone Number": userData.user.userInformation?.phoneNumber ?? "",
+				"Date of Birth": userData.user.userInformation?.dateOfBirth ?? "",
+			};
+			setUserAvatar(userData.user.userInformation?.avatarPath);
+			setData(customData);
+			setInitialData(customData);
+		});
+	}, [decoded.id]);
 	return (
 		<>
 			<Box sx={{ mt: 2, border: "1px solid #7d7d7d", borderRadius: 3 }}>
@@ -205,28 +184,10 @@ const UserProfile = () => {
 											<InputLabel>{field}:</InputLabel>
 										</Grid>
 										<Grid item xs={9}>
-											{field === "Department" && editMode ? (
-												<FormControl size="small" fullWidth>
-													<Select
-														value={data ? data[field] : ""}
-														onChange={(event) => {
-															setData((prevData) => ({
-																...prevData,
-																[field]: event.target.value,
-															}));
-														}}
-														fullWidth>
-														{department.map((item) => (
-															<MenuItem value={item.name} key={item.id}>
-																{item.name}
-															</MenuItem>
-														))}
-													</Select>
-												</FormControl>
-											) : field === "Date of Birth" && editMode ? (
+											{field === "Date of Birth" && editMode ? (
 												<TextField
 													type="date"
-													value={data ? data["Date of Birth"] : ""}
+													value={data ? data["Date of Birth"] ?? "" : ""}
 													onChange={(event) => {
 														setData((prevData) => ({
 															...prevData,
@@ -241,7 +202,7 @@ const UserProfile = () => {
 													size="small"
 													disabled={!editMode || field === "User Name"}
 													fullWidth
-													value={data ? data[field] : ""}
+													value={data ? data[field] ?? "" : ""}
 													onChange={(event) => {
 														setData((prevData) => ({
 															...prevData,

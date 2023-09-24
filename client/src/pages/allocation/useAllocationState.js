@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import API from "../../services/request";
 import createAllField from "../../utils/field";
 
@@ -18,18 +18,11 @@ const useAllocationState = () => {
 	const [updateData, setUpdateData] = useState(false);
 	const [total, setTotal] = useState(0);
 	const [currentPage, setCurrentPage] = useState(0);
-	const headers = useMemo(() => {
-		return {
-			"Content-Type": "application/json",
-			Authorization: `Bearer ${localStorage.getItem("token")}`,
-			Accept: "application/json",
-		};
-	}, []);
 	useEffect(() => {
 		Promise.all([
-			API.getAPI("/asset/allocation", headers, { offset: 15 * currentPage }),
-			API.getAPI("/asset", headers, { limit: 1000 }),
-			API.getAPI("/user", headers, { limit: 1000 }),
+			API.getAPI("/asset/allocation", { offset: 15 * currentPage }),
+			API.getAPI("/asset", { limit: 100 }),
+			API.getAPI("/user", { limit: 100 }),
 		]).then(([allocationResponse, assetResponse, userResponse]) => {
 			const allocationData = allocationResponse.data;
 			const assetData = assetResponse.data;
@@ -61,7 +54,7 @@ const useAllocationState = () => {
 			const customHeader = ["Asset Name", "User Account", "Request Status", "Allocation Date", "Return Date"];
 			setTableHeader(customHeader);
 		});
-	}, [headers, updateData, currentPage]);
+	}, [updateData, currentPage]);
 	const handleClose = () => {
 		setOpen(false);
 	};
@@ -106,7 +99,7 @@ const useAllocationState = () => {
 					selectedAllocationStatus === "Return Request"
 						? { allocationStatus: "Waiting to Approve" }
 						: { allocationStatus: selectedAllocationStatus };
-				API.patchAPI(url, headers, payload)
+				API.patchAPI(url, payload)
 					.then((response) => {
 						resolve(response);
 						setUpdateData((prev) => !prev);

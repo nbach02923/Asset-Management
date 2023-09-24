@@ -23,6 +23,7 @@ import {
 	Search as SearchIcon,
 	ContentPasteSearch as ContentPasteSearchIcon,
 	Flag as FlagIcon,
+	Download as DownloadIcon,
 } from "@mui/icons-material";
 import { Zoom } from "@mui/material";
 import Tooltip from "@mui/material/Tooltip";
@@ -38,15 +39,17 @@ const DataTable = ({
 	columnWidths,
 	actionsColumnWidth,
 	shouldRenderEditButton = () => true,
+	rowsPerPage = 15,
 	total,
 	currentPage,
 	setCurrentPage,
+	shouldRenderActionsColumn = true,
+	shouldRenderSearchBar = true,
 }) => {
 	const [searchTerm, setSearchTerm] = useState("");
 	const [filteredData, setFilteredData] = useState(data);
 	const [page] = useState(0);
 	const [originalData, setOriginalData] = useState(data || []);
-	const rowsPerPage = 15;
 	useEffect(() => {
 		setFilteredData(data);
 	}, [data]);
@@ -80,20 +83,22 @@ const DataTable = ({
 					alignItems: "center",
 					justifyItems: "center",
 				}}>
-				<TextField
-					label="Search Item"
-					value={searchTerm}
-					onChange={handleSearch}
-					sx={{ marginBottom: "5px", width: "300px" }}
-					size="small"
-					InputProps={{
-						startAdornment: (
-							<InputAdornment position="start">
-								<SearchIcon />
-							</InputAdornment>
-						),
-					}}
-				/>
+				{shouldRenderSearchBar && (
+					<TextField
+						label="Search Item"
+						value={searchTerm}
+						onChange={handleSearch}
+						sx={{ marginBottom: "5px", width: "300px" }}
+						size="small"
+						InputProps={{
+							startAdornment: (
+								<InputAdornment position="start">
+									<SearchIcon />
+								</InputAdornment>
+							),
+						}}
+					/>
+				)}
 				{handleActionOnClick && handleActionOnClick.addNew && (
 					<Button
 						variant="contained"
@@ -101,6 +106,15 @@ const DataTable = ({
 						startIcon={<AddCircleOutlineIcon />}
 						sx={{ marginBottom: "5px" }}>
 						Add New
+					</Button>
+				)}
+				{handleActionOnClick && handleActionOnClick.download && (
+					<Button
+						variant="contained"
+						onClick={handleActionOnClick.download}
+						startIcon={<DownloadIcon />}
+						sx={{ marginBottom: "5px" }}>
+						Download
 					</Button>
 				)}
 			</Box>
@@ -114,7 +128,7 @@ const DataTable = ({
 									{header}
 								</TableCell>
 							))}
-							{handleActionOnClick && (
+							{handleActionOnClick && shouldRenderActionsColumn && (
 								<TableCell style={{ width: actionsColumnWidth, textAlign: "center" }}>
 									Actions
 								</TableCell>
@@ -132,7 +146,7 @@ const DataTable = ({
 										</TableCell>
 										{Object.values(row)
 											.filter(
-												(value, index) =>
+												(_value, index) =>
 													![
 														"id",
 														"code",
@@ -152,7 +166,7 @@ const DataTable = ({
 													{value.length > 40 ? value.substring(0, 40) + "..." : value}
 												</TableCell>
 											))}
-										{handleActionOnClick && (
+										{handleActionOnClick && shouldRenderActionsColumn && (
 											<TableCell style={{ width: actionsColumnWidth, textAlign: "center" }}>
 												{handleActionOnClick.edit &&
 													(!shouldRenderEditButton || shouldRenderEditButton(row)) && (

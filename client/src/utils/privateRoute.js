@@ -19,9 +19,9 @@ const PrivateRoute = ({ children }) => {
 	const status = 401;
 	return (
 		<>
-			{children}
+			{hasToken ? children : null}
 			<Popup.ErrorPopup open={open} handleClose={handleClose} statusCode={status} message={message} />
-			<Outlet />
+			{hasToken && <Outlet />}
 		</>
 	);
 };

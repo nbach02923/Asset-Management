@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToOne, OneToMany } from "typeorm";
+import { Column, Entity, ManyToOne, OneToMany, CreateDateColumn, UpdateDateColumn } from "typeorm";
 import Base from "./Base";
 import CategoryAsset from "./CategoryAsset";
 import ErrorAsset from "./errorAsset";
@@ -6,63 +6,68 @@ import Allocation from "./Allocation";
 
 @Entity("asset")
 export default class Asset extends Base {
-	//tên tài sản
 	@Column({
 		type: "varchar",
 		length: 255,
 	})
-		name: string;
+	name: string;
 
 	@Column({ unique: true })
-		serial: string;
+	serial: string;
 
 	@Column({
 		type: "enum",
 		enum: ["Stationary", "Nonstationary", "Other"],
 	})
-		type: string;
+	type: string;
 
 	@Column({
 		type: "enum",
 		enum: ["Ready to Deploy", "Deployed", "Error"],
 	})
-		status: string;
+	status: string;
 
 	@Column({
 		type: "text",
 		default: null,
 	})
-		description: string;
+	description: string;
 
-	// @Column({
-	// 	type: "date",
-	// 	default: null,
-	// })
-	// 	warrantDate: string;
+	@Column({
+		type: "date",
+		default: null,
+	})
+	warrantDate: string;
 
-	// @Column({
-	// 	type: "date",
-	// 	default: null,
-	// })
-	// 	buyDate: string;
+	@Column({
+		type: "date",
+		default: null,
+	})
+	buyDate: string;
 
 	@Column()
-		categoryAssetId: string;
+	categoryAssetId: string;
 
 	@ManyToOne(() => CategoryAsset, (categoryAsset) => categoryAsset.asset, {
 		onDelete: "CASCADE",
 		onUpdate: "CASCADE",
 	})
-		categoryAsset: CategoryAsset;
+	categoryAsset: CategoryAsset;
 
 	@Column({
 		default: false,
 	})
-		isDeleted: boolean;
+	isDeleted: boolean;
 
 	@OneToMany(() => ErrorAsset, (errorAsset) => errorAsset.asset)
-		errorAsset: ErrorAsset;
+	errorAsset: ErrorAsset;
 
 	@OneToMany(() => Allocation, (allocation) => allocation.asset)
-		allocation: Allocation;
+	allocation: Allocation;
+
+	@CreateDateColumn()
+	createAt: string;
+
+	@UpdateDateColumn()
+	updateAt: string;
 }

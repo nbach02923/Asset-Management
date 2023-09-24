@@ -17,7 +17,7 @@ async function getCategory(req: Request, res: Response, next: NextFunction) {
 					.createQueryBuilder("category")
 					.leftJoinAndSelect("category.asset", "asset")
 					.select(["category.id as id", "category.name as name"])
-					.addSelect("COUNT(asset.id)", "assetCount")
+					.addSelect("-(asset.id)", "assetCount")
 					.where("category.id = :id AND category.isDeleted = :isDeleted", {
 						id: categoryId,
 						isDeleted: false,

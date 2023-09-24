@@ -4,7 +4,7 @@ import { Container } from "@mui/material";
 import useStatisticsState from "./useStatisticsState";
 
 const Statistics = () => {
-	const { data, tableHeader, total, currentPage, setCurrentPage } = useStatisticsState();
+	const { data, tableHeader, total, currentPage, setCurrentPage, handleDownload } = useStatisticsState();
 	return (
 		<Container>
 			<DataTable
@@ -14,6 +14,10 @@ const Statistics = () => {
 				total={total}
 				currentPage={currentPage}
 				setCurrentPage={setCurrentPage}
+				handleActionOnClick={{
+					download: handleDownload,
+				}}
+				shouldRenderActionsColumn={false}
 			/>
 		</Container>
 	);

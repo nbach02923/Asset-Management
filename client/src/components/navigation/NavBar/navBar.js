@@ -24,12 +24,14 @@ const NavBar = () => {
 					<IconButton edge="start" color="inherit" aria-label="menu" onClick={handleToggle}>
 						<MenuIcon />
 					</IconButton>
-					<Box sx={{ marginLeft: "10px" }}>
-						<img src={logo} width="100px" alt="logo" />
+					<Box sx={{ display: "flex", alignItems: "center", cursor: "pointer" }} onClick={() => navigate("/")}>
+						<Box sx={{ marginLeft: "10px" }}>
+							<img src={logo} width="100px" alt="logo" />
+						</Box>
+						<Typography variant="h6" sx={{ marginLeft: "5px" }}>
+							Asset Management System
+						</Typography>
 					</Box>
-					<Typography variant="h6" sx={{ marginLeft: "5px" }}>
-						Asset Management System
-					</Typography>
 					<Box sx={{ flexGrow: 1 }} />
 					<TextField
 						variant="outlined"

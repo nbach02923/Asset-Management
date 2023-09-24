@@ -27,6 +27,9 @@ const User = () => {
 		errorStatusCode,
 		errorMessage,
 		currentAction,
+		total,
+		currentPage,
+		setCurrentPage,
 	} = useUserState();
 
 	return (
@@ -43,6 +46,9 @@ const User = () => {
 				}}
 				columnWidths={[200, 124]}
 				actionsColumnWidth={120}
+				total={total}
+				currentPage={currentPage}
+				setCurrentPage={setCurrentPage}
 			/>
 			<ModalComponent
 				open={open}

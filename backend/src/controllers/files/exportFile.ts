@@ -9,19 +9,19 @@ async function exportAssetReport(req: Request, res: Response, next: NextFunction
 			.createQueryBuilder("asset")
 			.leftJoin("asset.categoryAsset", "categoryAsset", "categoryAsset.id = asset.categoryAssetId")
 			.leftJoinAndSelect("asset.allocation", "allocation")
+			.leftJoinAndSelect("asset.errorAsset", "errorAsset")
 			.select([
-				"asset.name as Asset_Name",
-				"asset.serial as Serial",
-				"asset.description as Description",
-				"asset.type as Type",
-				"asset.status as Status",
+				"asset.name AS Asset_Name",
+				"asset.serial AS Serial",
+				"categoryAsset.name AS Category_Name",
+				"COUNT(allocation.assetId) AS Time_Requested",
+				"SUM(CASE WHEN allocation.allocationStatus = 'Allocated' THEN 1 ELSE 0 END) AS Allocated_Count",
+				"COUNT(errorAsset.assetId) AS Time_Reported",
+				"SUM(CASE WHEN errorAsset.status = 'Fixed' THEN 1 ELSE 0 END) AS Fixed_Count",
 			])
-			.addSelect("categoryAsset.name as Category_Name")
-			.addSelect("SUM(CASE WHEN allocation.allocationStatus = 'Allocated' THEN 1 ELSE 0 END)", "Allocated_Count")
-			.where("asset.isDeleted = :isDeleted", {isDeleted: false})
+			.where("asset.isDeleted = :isDeleted", { isDeleted: false })
 			.groupBy("asset.id")
-			.orderBy("categoryAsset.name", "ASC")
-			.addOrderBy("asset.name", "ASC")
+			.orderBy("categoryAsset.name, asset.name", "ASC")
 			.getRawMany();
 		const assets = assetRepository.map((asset, index) => ({
 			No: index + 1,
@@ -31,9 +31,11 @@ async function exportAssetReport(req: Request, res: Response, next: NextFunction
 		const workbook = XLSX.utils.book_new();
 		XLSX.utils.book_append_sheet(workbook, worksheet, "Assets");
 		const buffer = XLSX.write(workbook, { type: "buffer", bookType: "xlsx" });
-		res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-		res.setHeader("Content-Disposition", "attachment; filename=AssetReport.xlsx");
-		res.end(buffer);
+		res.set({
+			"Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+			"Content-Disposition": "attachment; filename=AssetReport.xlsx",
+		});
+		res.send(buffer);
 	} catch (err) {
 		next(err);
 	}

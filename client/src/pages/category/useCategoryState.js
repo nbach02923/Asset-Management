@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import API from "../../services/request";
 import createAllField from "../../utils/field";
 
@@ -19,13 +19,6 @@ const useCategoryState = () => {
 	const [updateData, setUpdateData] = useState(false);
 	const [total, setTotal] = useState(0);
 	const [currentPage, setCurrentPage] = useState(0);
-	const headers = useMemo(() => {
-		return {
-			"Content-Type": "application/json",
-			Authorization: `Bearer ${localStorage.getItem("token")}`,
-			Accept: "application/json",
-		};
-	}, []);
 	const handleClose = () => {
 		setOpen(false);
 	};
@@ -54,7 +47,7 @@ const useCategoryState = () => {
 				const payload = {
 					name: selectedName,
 				};
-				API.postAPI("/categoryAsset", headers, payload)
+				API.postAPI("/categoryAsset", undefined, payload)
 					.then((response) => {
 						resolve(response);
 						setUpdateData((prev) => !prev);
@@ -66,7 +59,7 @@ const useCategoryState = () => {
 				const payload = {
 					name: selectedName,
 				};
-				API.patchAPI(`/categoryAsset/${selectedId}`, headers, payload)
+				API.patchAPI(`/categoryAsset/${selectedId}`, payload)
 					.then((response) => {
 						resolve(response);
 						setUpdateData((prev) => !prev);
@@ -76,7 +69,7 @@ const useCategoryState = () => {
 					});
 			} else if (currentAction === "delete") {
 				setShowWarning(false);
-				API.deleteAPI(`/categoryAsset/${selectedId}`, headers)
+				API.deleteAPI(`/categoryAsset/${selectedId}`)
 					.then((response) => {
 						resolve(response.data);
 						setUpdateData((prev) => !prev);
@@ -111,7 +104,7 @@ const useCategoryState = () => {
 		const querys = {
 			offset: 15 * currentPage,
 		};
-		API.getAPI("/categoryAsset", headers, querys).then((response) => {
+		API.getAPI("/categoryAsset", querys).then((response) => {
 			const category = response.data;
 			const customHeaders = ["Category Name", "Asset Quantity"];
 			setTableHeader(customHeaders);
@@ -125,7 +118,7 @@ const useCategoryState = () => {
 			});
 			setData(customData);
 		});
-	}, [headers, updateData, currentPage]);
+	}, [updateData, currentPage]);
 	return {
 		data,
 		tableHeader,

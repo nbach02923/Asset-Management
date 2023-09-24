@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import API from "../../services/request";
 import createAllField from "../../utils/field";
 
@@ -19,13 +19,6 @@ const usePositionState = () => {
 	const [updateData, setUpdateData] = useState(false);
 	const [total, setTotal] = useState(0);
 	const [currentPage, setCurrentPage] = useState(0);
-	const headers = useMemo(() => {
-		return {
-			"Content-Type": "application/json",
-			Authorization: `Bearer ${localStorage.getItem("token")}`,
-			Accept: "application/json",
-		};
-	}, []);
 	const handleClose = () => {
 		setOpen(false);
 	};
@@ -54,7 +47,7 @@ const usePositionState = () => {
 				const payload = {
 					name: selectedName,
 				};
-				API.postAPI("/position", headers, payload)
+				API.postAPI("/position", undefined, payload)
 					.then((response) => {
 						resolve(response);
 						setUpdateData((prev) => !prev);
@@ -66,7 +59,7 @@ const usePositionState = () => {
 				const payload = {
 					name: selectedName,
 				};
-				API.patchAPI(`/position/${selectedId}`, headers, payload)
+				API.patchAPI(`/position/${selectedId}`, payload)
 					.then((response) => {
 						resolve(response);
 						setUpdateData((prev) => !prev);
@@ -77,7 +70,7 @@ const usePositionState = () => {
 					});
 			} else if (currentAction === "delete") {
 				setShowWarning(false);
-				API.deleteAPI(`/position/${selectedId}`, headers)
+				API.deleteAPI(`/position/${selectedId}`)
 					.then((response) => {
 						resolve(response);
 						setUpdateData((prev) => !prev);
@@ -112,7 +105,7 @@ const usePositionState = () => {
 		const querys = {
 			offset: 15 * currentPage,
 		};
-		API.getAPI("/position", headers, querys).then((response) => {
+		API.getAPI("/position", querys).then((response) => {
 			const position = response.data;
 			const customHeaders = ["Position Name"];
 			setTableHeader(customHeaders);
@@ -125,7 +118,7 @@ const usePositionState = () => {
 			});
 			setData(customData);
 		});
-	}, [headers, updateData, currentPage]);
+	}, [updateData, currentPage]);
 	return {
 		data,
 		tableHeader,

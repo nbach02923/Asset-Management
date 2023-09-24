@@ -29,11 +29,15 @@ const ModalComponent = ({ open, handleClose, title, fields = [], handleAPI, isVi
 				})
 				.catch((err) => {
 					setLoading(false);
-					setStatusCode(err.response.status)
-					if (err.response.data.details) {
-						setResponseMessage(err.response.data.details.body[0].message);
-					} else {
-						setResponseMessage(err.response.data.message);
+					if (err.response) {
+						if (err.response.status) {
+							setStatusCode(err.response.status);
+						}
+						if (err.response.data.details) {
+							setResponseMessage(err.response.data.details.body[0].message);
+						} else {
+							setResponseMessage(err.response.data.message);
+						}
 					}
 					setErrorOpen(true);
 				});

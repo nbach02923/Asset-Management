@@ -8,6 +8,8 @@ import jsonwebtoken from "jsonwebtoken";
 import email from "../email/email";
 import { payload } from "src/config/Config";
 import UserInformation from "../../entities/User_Information";
+import { LessThan, MoreThan } from "typeorm";
+import UserAccount from "../../../src/entities/User_Account";
 
 async function getAll(req: Request, res: Response, next: NextFunction) {
 	try {
@@ -559,6 +561,55 @@ async function getStatistic(req: Request, res: Response, next: NextFunction) {
 		next(err);
 	}
 }
+async function getRecentActivities(req: Request, res: Response, next: NextFunction) {
+	try {
+		const timeLimit = req.query.time
+			? new Date(req.query.time as string).toISOString().replace("T", " ").substring(0, 23)
+			: new Date(Date.now() + 6 * 60 * 60 * 1000).toISOString().replace("T", " ").substring(0, 23);
+		const [recentAsset, recentAllocation, recentError, recentUser] = await Promise.all([
+			AppDataSource.getRepository(Asset).find({
+				where: { updateAt: MoreThan(timeLimit) },
+				order: { updateAt: "DESC" },
+			}),
+			AppDataSource.getRepository(Allocation).find({
+				where: { updateAt: MoreThan(timeLimit) },
+				order: { updateAt: "DESC" },
+			}),
+			AppDataSource.getRepository(ErrorAsset).find({
+				where: { updateAt: MoreThan(timeLimit) },
+				order: { updateAt: "DESC" },
+			}),
+			AppDataSource.getRepository(UserAccount).find({
+				where: { updateAt: MoreThan(timeLimit) },
+				order: { updateAt: "DESC" },
+			}),
+		]);
+		const recentActivities = [...recentAllocation, ...recentAsset, ...recentError, ...recentUser].map(
+			(activity) => {
+				let message;
+				if (new Date(activity.createAt).getTime() === new Date(activity.updateAt).getTime()) {
+					message = "Create new ";
+				} else {
+					message = "Update ";
+				}
+				if (activity instanceof Allocation) {
+					message += "allocation request";
+				} else if (activity instanceof Asset) {
+					message += "asset";
+				} else if (activity instanceof ErrorAsset) {
+					message += "error report";
+				} else if (activity instanceof UserAccount) {
+					message += "user";
+				}
+				return { ...activity, message };
+			}
+		);
+		recentActivities.sort((a, b) => new Date(b.updateAt).getTime() - new Date(a.updateAt).getTime());
+		res.status(200).json({ actTotal: recentActivities.length, activities: recentActivities });
+	} catch (err) {
+		next(err);
+	}
+}
 
 const crudAsset = {
 	getAll,
@@ -576,6 +627,7 @@ const crudAsset = {
 	verifyReport,
 	verifyReturn,
 	getStatistic,
+	getRecentActivities,
 };
 
 export default crudAsset;

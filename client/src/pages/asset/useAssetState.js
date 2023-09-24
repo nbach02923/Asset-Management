@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import API from "../../services/request";
 import createAllField from "../../utils/field";
 import { Button } from "@mui/material";
@@ -30,13 +30,6 @@ const useAssetState = () => {
 	const [selectedReturnDate, setSelectedReturnDate] = useState("");
 	const [total, setTotal] = useState(0);
 	const [currentPage, setCurrentPage] = useState(0);
-	const headers = useMemo(() => {
-		return {
-			"Content-Type": "application/json",
-			Authorization: `Bearer ${localStorage.getItem("token")}`,
-			Accept: "application/json",
-		};
-	}, []);
 	const HoverButton = (props) => {
 		const [hover, setHover] = useState(false);
 		return (
@@ -65,41 +58,39 @@ const useAssetState = () => {
 		const querys = {
 			offset: 15 * currentPage,
 		};
-		Promise.all([
-			API.getAPI("/asset", headers, querys),
-			API.getAPI("/categoryAsset", headers, { limit: 100 }),
-		]).then(([assetResponse, categoryResponse]) => {
-			const assetData = assetResponse.data;
-			const categoryData = categoryResponse.data;
-			setCategory(categoryData.category);
-			const categoryMap = {};
-			categoryData.category.forEach((category) => {
-				categoryMap[category.id] = category.name;
-			});
-			const customHeaders = ["Asset Name", "Asset Picture", "Serial", "Category", "Status", "Allocation"];
-			setTableHeader(customHeaders);
-			setTotal(assetData.assetTotal);
-			const customData = assetData.asset.map((item) => {
-				return {
-					id: item.id,
-					name: item.name,
-					picture: "",
-					serial: item.serial,
-					type: item.type,
-					category: categoryMap[item.categoryAssetId],
-					status: item.status,
-					description: item.description,
-					allocation:
-						item.status === "Ready to Deploy" ? (
-							<HoverButton color="success" onClick={() => handleCheckIn(item)} size="small">
-								Check In
-							</HoverButton>
-						) : null,
-				};
-			});
-			setData(customData);
-		});
-	}, [headers, updateData, handleCheckIn, currentPage]);
+		Promise.all([API.getAPI("/asset", querys), API.getAPI("/categoryAsset", { limit: 100 })]).then(
+			([assetResponse, categoryResponse]) => {
+				const assetData = assetResponse.data;
+				const categoryData = categoryResponse.data;
+				setCategory(categoryData.category);
+				const categoryMap = {};
+				categoryData.category.forEach((category) => {
+					categoryMap[category.id] = category.name;
+				});
+				const customHeaders = ["Asset Name", "Serial", "Category", "Status", "Allocation"];
+				setTableHeader(customHeaders);
+				setTotal(assetData.assetTotal);
+				const customData = assetData.asset.map((item) => {
+					return {
+						id: item.id,
+						name: item.name,
+						serial: item.serial,
+						type: item.type,
+						category: categoryMap[item.categoryAssetId],
+						status: item.status,
+						description: item.description,
+						allocation:
+							item.status === "Ready to Deploy" ? (
+								<HoverButton color="success" onClick={() => handleCheckIn(item)} size="small">
+									Check In
+								</HoverButton>
+							) : (<></>),
+					};
+				});
+				setData(customData);
+			}
+		);
+	}, [updateData, handleCheckIn, currentPage]);
 	useEffect(() => {
 		if (!open) {
 			setSelectedName("");
@@ -222,7 +213,7 @@ const useAssetState = () => {
 					categoryId: selectedCategoryId,
 					description: selectedDescription,
 				};
-				API.postAPI("/asset", headers, payload)
+				API.postAPI("/asset", undefined,payload)
 					.then((response) => {
 						resolve(response);
 						setUpdateData((prev) => !prev);
@@ -237,7 +228,7 @@ const useAssetState = () => {
 					categoryId: selectedCategoryId,
 					description: selectedDescription,
 				};
-				API.patchAPI(`/asset/${selectedId}`, headers, payload)
+				API.patchAPI(`/asset/${selectedId}`, payload)
 					.then((response) => {
 						resolve(response);
 						setUpdateData((prev) => !prev);
@@ -247,7 +238,7 @@ const useAssetState = () => {
 					});
 			} else if (currentAction === "delete") {
 				setShowWarning(false);
-				API.deleteAPI(`/asset/${selectedId}`, headers)
+				API.deleteAPI(`/asset/${selectedId}`)
 					.then((response) => {
 						resolve(response);
 						setUpdateData((prev) => !prev);
@@ -270,7 +261,7 @@ const useAssetState = () => {
 					allocationDate: selectedAllocateDate,
 					returnDate: selectedReturnDate,
 				};
-				API.postAPI(`/asset/allocationAsset/${selectedId}`, headers, payload)
+				API.postAPI(`/asset/allocationAsset/${selectedId}`, undefined,payload)
 					.then((response) => {
 						resolve(response);
 						setUpdateData((prev) => !prev);

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import { Box, TextField, Typography, Grid, InputLabel, Stack, Button, InputAdornment, IconButton } from "@mui/material";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
@@ -9,13 +9,6 @@ import decodeJWT from "../../utils/decodeJWT";
 const fields = ["Current Password", "New Password", "Confirm Password"];
 const decoded = decodeJWT();
 const ChangePassword = () => {
-	const headers = useMemo(() => {
-		return {
-			"Content-Type": "application/json",
-			Authorization: `Bearer ${localStorage.getItem("token")}`,
-			Accept: "application/json",
-		};
-	}, []);
 	const [showPassword, setShowPassword] = useState(Array(fields.length).fill(false));
 	const [values, setValues] = useState(Array(fields.length).fill(""));
 	const [showError, setShowError] = useState(false);
@@ -42,7 +35,7 @@ const ChangePassword = () => {
 			newPassword: values[1],
 			confPassword: values[2],
 		};
-		API.patchAPI(`/user/changePassword/${decoded.id}`, headers, payload)
+		API.patchAPI(`/user/changePassword/${decoded.id}`, payload)
 			.then((response) => {
 				setResponseMessage(response.data.message);
 				setShowSuccess(true);

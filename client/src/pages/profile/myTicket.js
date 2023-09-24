@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import ModalComponent from "../../components/modal";
 import DataTable from "../../components/dataTable";
 import { Container } from "@mui/material";
@@ -8,13 +8,6 @@ import createAllField from "../../utils/field";
 
 const MyTicket = () => {
 	const decoded = decodeJWT();
-	const headers = useMemo(() => {
-		return {
-			"Content-Type": "application/json",
-			Authorization: `Bearer ${localStorage.getItem("token")}`,
-			Accept: "application/json",
-		};
-	}, []);
 	const [data, setData] = useState([]);
 	const [tableHeader, setTableHeader] = useState([]);
 	const [open, setOpen] = useState(false);
@@ -37,9 +30,9 @@ const MyTicket = () => {
 			offset: 15 * currentPage,
 		};
 		Promise.all([
-			API.getAPI("/asset/allocation", headers, query),
-			API.getAPI("/asset", headers, { limit: 1000 }),
-			API.getAPI("/user", headers, { limit: 1000 }),
+			API.getAPI("/asset/allocation", query),
+			API.getAPI("/asset", { limit: 100 }),
+			API.getAPI("/user", { limit: 100 }),
 		]).then(([allocationResponse, assetResponse, userResponse]) => {
 			const allocationData = allocationResponse.data;
 			const assetData = assetResponse.data;
@@ -71,7 +64,7 @@ const MyTicket = () => {
 			const customHeader = ["Asset Name", "Request Status", "Allocation Date", "Return Date"];
 			setTableHeader(customHeader);
 		});
-	}, [headers, updateData, decoded.id, currentPage]);
+	}, [updateData, decoded.id, currentPage]);
 	const handleClose = () => {
 		setOpen(false);
 	};
@@ -113,7 +106,7 @@ const MyTicket = () => {
 					allocationStatus: selectedAllocationStatus === "" ? null : "Waiting to Approve",
 				};
 				console.log(payload);
-				API.patchAPI(`/asset/returnAsset/${selectedId}`, headers, payload)
+				API.patchAPI(`/asset/returnAsset/${selectedId}`, payload)
 					.then((response) => {
 						resolve(response);
 						setUpdateData((prev) => !prev);
@@ -126,7 +119,7 @@ const MyTicket = () => {
 					userId: decoded.id,
 					description: selectedDescription,
 				};
-				API.postAPI(`/asset/errorReport/${selectedId}`, headers, payload)
+				API.postAPI(`/asset/errorReport/${selectedId}`, undefined, payload)
 					.then((response) => {
 						resolve(response);
 						setUpdateData((prev) => !prev);
@@ -139,7 +132,7 @@ const MyTicket = () => {
 		});
 	};
 	const shouldRenderEditButton = (row) => {
-		return !["Rejected", "Returned", "Waiting to Approve"].includes(row.allocationStatus);
+		return !["Pending", "Rejected", "Returned", "Waiting to Approve"].includes(row.allocationStatus);
 	};
 	return (
 		<Container>

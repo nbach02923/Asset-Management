@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import API from "../../services/request";
 import createAllField from "../../utils/field";
 
@@ -28,13 +28,8 @@ const useUserState = () => {
 	const [responseMessage, setResponseMessage] = useState("");
 	const [errorStatusCode, setErrorStatusCode] = useState(null);
 	const [updateData, setUpdateData] = useState(false);
-	const headers = useMemo(() => {
-		return {
-			"Content-Type": "application/json",
-			Authorization: `Bearer ${localStorage.getItem("token")}`,
-			Accept: "application/json",
-		};
-	}, []);
+	const [total, setTotal] = useState(0);
+	const [currentPage, setCurrentPage] = useState(0);
 	useEffect(() => {
 		if (!open) {
 			setSelectedUserName("");
@@ -83,29 +78,29 @@ const useUserState = () => {
 	]);
 	useEffect(() => {
 		const querys = {
-			limit: 1000,
+			offset: 15 * currentPage,
 		};
 		Promise.all([
-			API.getAPI("/user", headers, querys),
-			API.getAPI("/department", headers, querys),
-			API.getAPI("/position", headers, querys),
-		]).then(([assetResponse, departmentResponse, positionResponse]) => {
-			const assetData = assetResponse.data;
+			API.getAPI("/user", querys),
+			API.getAPI("/department", { limit: 100 }),
+			API.getAPI("/position", { limit: 100 }),
+		]).then(([userResponse, departmentResponse, positionResponse]) => {
+			const userData = userResponse.data;
 			const departmentData = departmentResponse.data;
 			const positionData = positionResponse.data;
-			setDepartment(departmentData);
-			setPosition(positionData);
+			setDepartment(departmentData.department);
+			setPosition(positionData.position);
 			const departmentMap = {};
-			departmentData.forEach((department) => {
+			departmentData.department.forEach((department) => {
 				departmentMap[department.id] = department.name;
 			});
 			const positionMap = {};
-			positionData.forEach((position) => {
+			positionData.position.forEach((position) => {
 				positionMap[position.code] = position.name;
 			});
 			const customHeaders = ["User Name", "Department", "Role", "Position"];
 			setTableHeader(customHeaders);
-			const customData = assetData.map((item) => {
+			const customData = userData.user.map((item) => {
 				const userInformation = item.userInformation || {};
 				return {
 					id: item.id,
@@ -120,9 +115,10 @@ const useUserState = () => {
 					avatarPath: userInformation.avatarPath || "",
 				};
 			});
+			setTotal(userData.userTotal);
 			setData(customData);
 		});
-	}, [headers, updateData]);
+	}, [updateData, currentPage]);
 	const handleAddNew = () => {
 		setCurrentAction("addNew");
 		setOpen(true);
@@ -153,9 +149,9 @@ const useUserState = () => {
 		setCurrentAction("edit");
 		setOpen(true);
 		setTitle("Edit User");
-		const selectedDepartment = department.find((item) => item.name === row.department);
+		const selectedDepartment = department.department.find((item) => item.name === row.department);
 		setSelectedDepartmentId(selectedDepartment.id);
-		const selectedPosition = position.find((item) => item.name === row.position);
+		const selectedPosition = position.position.find((item) => item.name === row.position);
 		setSelectedPositionCode(selectedPosition.code);
 		setSelectedId(row.id);
 		setSelectedFullName(row.fullName);
@@ -171,7 +167,7 @@ const useUserState = () => {
 			createAllField.createField("Date of Birth", "text", row.dob, setSelectedDoB),
 			createAllField.createSelectField(
 				"Department",
-				department.map((item) => item.name),
+				department.department.map((item) => item.name),
 				row.department,
 				setSelectedDepartment,
 				department,
@@ -179,7 +175,7 @@ const useUserState = () => {
 			),
 			createAllField.createSelectField(
 				"Position",
-				position.map((item) => item.name),
+				position.position.map((item) => item.name),
 				row.position,
 				setSelectedPosition,
 				position,
@@ -219,7 +215,7 @@ const useUserState = () => {
 					positionCode: selectedPositionCode,
 					role: selectedRole === "Admin" ? true : false,
 				};
-				API.postAPI("/user", headers, payload)
+				API.postAPI("/user", undefined, payload)
 					.then((response) => {
 						resolve(response);
 						setUpdateData((prev) => !prev);
@@ -236,7 +232,7 @@ const useUserState = () => {
 					departmentId: selectedDepartmentId,
 					positionCode: selectedPositionCode,
 				};
-				API.patchAPI(`/user/${selectedId}`, headers, payload)
+				API.patchAPI(`/user/${selectedId}`, payload)
 					.then((response) => {
 						resolve(response);
 						setUpdateData((prev) => !prev);
@@ -246,7 +242,7 @@ const useUserState = () => {
 					});
 			} else if (currentAction === "delete") {
 				setShowWarning(false);
-				API.deleteAPI(`/user/${selectedId}`, headers)
+				API.deleteAPI(`/user/${selectedId}`)
 					.then((response) => {
 						resolve(response.data);
 						setUpdateData((prev) => !prev);
@@ -287,6 +283,9 @@ const useUserState = () => {
 		showSuccess,
 		setShowSuccess,
 		currentAction,
+		total,
+		currentPage,
+		setCurrentPage,
 	};
 };
 export default useUserState;

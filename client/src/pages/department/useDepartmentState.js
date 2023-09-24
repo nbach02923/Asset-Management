@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import API from "../../services/request";
 import createAllField from "../../utils/field";
 
@@ -19,13 +19,6 @@ const useDepartmentState = () => {
 	const [updateData, setUpdateData] = useState(false);
 	const [total, setTotal] = useState(0);
 	const [currentPage, setCurrentPage] = useState(0);
-	const headers = useMemo(() => {
-		return {
-			"Content-Type": "application/json",
-			Authorization: `Bearer ${localStorage.getItem("token")}`,
-			Accept: "application/json",
-		};
-	}, []);
 	const handleClose = () => {
 		setOpen(false);
 	};
@@ -54,7 +47,7 @@ const useDepartmentState = () => {
 				const payload = {
 					name: selectedName,
 				};
-				API.postAPI("/department", headers, payload)
+				API.postAPI("/department", undefined, payload)
 					.then((response) => {
 						resolve(response);
 						setUpdateData((prev) => !prev);
@@ -66,7 +59,7 @@ const useDepartmentState = () => {
 				const payload = {
 					name: selectedName,
 				};
-				API.patchAPI(`/department/${selectedId}`, headers, payload)
+				API.patchAPI(`/department/${selectedId}`, payload)
 					.then((response) => {
 						resolve(response);
 						setUpdateData((prev) => !prev);
@@ -77,7 +70,7 @@ const useDepartmentState = () => {
 					});
 			} else if (currentAction === "delete") {
 				setShowWarning(false);
-				API.deleteAPI(`/department/${selectedId}`, headers)
+				API.deleteAPI(`/department/${selectedId}`)
 					.then((response) => {
 						resolve(response);
 						setUpdateData((prev) => !prev);
@@ -112,7 +105,7 @@ const useDepartmentState = () => {
 		const querys = {
 			offset: 15 * currentPage,
 		};
-		API.getAPI("/department", headers, querys).then((response) => {
+		API.getAPI("/department", querys).then((response) => {
 			const department = response.data;
 			const customHeaders = ["Department Name", "Number of member"];
 			setTableHeader(customHeaders);
@@ -126,7 +119,7 @@ const useDepartmentState = () => {
 			});
 			setData(customData);
 		});
-	}, [headers, updateData, currentPage]);
+	}, [updateData, currentPage]);
 	return {
 		data,
 		tableHeader,
