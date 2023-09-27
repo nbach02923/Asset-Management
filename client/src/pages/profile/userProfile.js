@@ -32,16 +32,18 @@ const UserProfile = () => {
 	const [open, setOpen] = useState(false);
 	const [editMode, setEditMode] = useState(false);
 	const [userAvatar, setUserAvatar] = useState(null);
+	const [updateData, setUpdateData] = useState(false);
 	const handleOpen = () => setOpen(true);
 	const handleClose = () => {
 		setOpen(false);
 		setSelectedFile(null);
 	};
 	const handleEdit = () => setEditMode(true);
-	const [selectedFile, setSelectedFile] = React.useState(null);
+	const [selectedFile, setSelectedFile] = useState(null);
 	const handleUpload = () => {
 		const payload = new FormData();
 		payload.append("file", selectedFile);
+		payload.append("fileType", "user");
 		const uploadHeaders = {
 			"Content-Type": "multipart/form-data",
 			Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -51,6 +53,7 @@ const UserProfile = () => {
 				setResponseMessage(response.data.message);
 				setEditMode(false);
 				setShowSuccess(true);
+				setUpdateData((prev) => !prev);
 			})
 			.catch((err) => {
 				setShowError(true);
@@ -85,6 +88,7 @@ const UserProfile = () => {
 				setResponseMessage(response.data.message);
 				setEditMode(false);
 				setShowSuccess(true);
+				setUpdateData((prev) => !prev);
 			})
 			.catch((err) => {
 				setShowError(true);
@@ -113,7 +117,7 @@ const UserProfile = () => {
 			setData(customData);
 			setInitialData(customData);
 		});
-	}, [decoded.id]);
+	}, [decoded.id, updateData]);
 	return (
 		<>
 			<Box sx={{ mt: 2, border: "1px solid #7d7d7d", borderRadius: 3 }}>
@@ -315,7 +319,7 @@ const UserProfile = () => {
 				open={showWarning}
 				handleClose={() => setShowWarning(false)}
 				handleOk={handleAPI}
-				message={"You confirm all information correct?"}
+				message={"Are you sure?"}
 			/>
 			<Popup.ErrorPopup
 				open={showError}

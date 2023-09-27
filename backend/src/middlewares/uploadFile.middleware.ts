@@ -4,7 +4,7 @@ import { payload } from "../config/Config";
 
 const storage = multer.diskStorage({
 	destination: function (req, file, cb) {
-		const path = "./src/controllers/uploadFile/file/";
+		const path = "./src/controllers/files/file/";
 		if (file.mimetype === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") {
 			cb(null, `${path}spreadsheet/`);
 		} else if (file.mimetype.startsWith("image/")) {
@@ -16,7 +16,7 @@ const storage = multer.diskStorage({
 		const token = req.headers.authorization.split(" ")[1];
 		const decodedToken = jsonwebtoken.decode(token) as payload;
 		const userName = decodedToken.userName;
-		cb(null, `${uniqueSuffix}_${userName}_${file.originalname}`);
+		cb(null, `${uniqueSuffix}_${req.params.id}_${userName}_${file.originalname}`);
 	},
 });
 

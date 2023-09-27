@@ -58,7 +58,7 @@ router.route("/user/:userId").delete(token.verifyToken, token.checkAdmin,   crud
 // router.route("/user/active/:emailToken").post(uploadFile.single("fileExcel"),uploadFileExcel,validate(validation.updateUser),crudUser.updateInformationUserExcel); //sửa thoong tin người dùng theo file Excel trong
 
 //file
-router.route("/upload/:userId").post(token.verifyToken, uploadFile.single("file"), upload.uploadFile)
+router.route("/upload/:id").post(token.verifyToken, uploadFile.single("file"), upload.uploadFile)
 
 //misc
 router.route("/recentAct").get(token.verifyToken, token.checkAdmin, crudAsset.getRecentActivities);

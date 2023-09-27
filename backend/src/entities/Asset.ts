@@ -34,6 +34,12 @@ export default class Asset extends Base {
 	description: string;
 
 	@Column({
+		type: "varchar",
+		default: null,
+	})
+	picturePath: string;
+
+	@Column({
 		type: "date",
 		default: null,
 	})

@@ -149,9 +149,9 @@ const useUserState = () => {
 		setCurrentAction("edit");
 		setOpen(true);
 		setTitle("Edit User");
-		const selectedDepartment = department.department.find((item) => item.name === row.department);
+		const selectedDepartment = department.find((item) => item.name === row.department);
 		setSelectedDepartmentId(selectedDepartment.id);
-		const selectedPosition = position.position.find((item) => item.name === row.position);
+		const selectedPosition = position.find((item) => item.name === row.position);
 		setSelectedPositionCode(selectedPosition.code);
 		setSelectedId(row.id);
 		setSelectedFullName(row.fullName);
@@ -167,7 +167,7 @@ const useUserState = () => {
 			createAllField.createField("Date of Birth", "text", row.dob, setSelectedDoB),
 			createAllField.createSelectField(
 				"Department",
-				department.department.map((item) => item.name),
+				department.map((item) => item.name),
 				row.department,
 				setSelectedDepartment,
 				department,
@@ -175,7 +175,7 @@ const useUserState = () => {
 			),
 			createAllField.createSelectField(
 				"Position",
-				position.position.map((item) => item.name),
+				position.map((item) => item.name),
 				row.position,
 				setSelectedPosition,
 				position,

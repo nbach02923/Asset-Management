@@ -1,3 +1,5 @@
+## 27/09/2023
+*Only sort function left to finish the alpha version of the project
 ## 24/09/2023
 * Almost finish the project. finish the upload picture for asset left
 * Front end will not have a huge search bar on nav bar anymore. does not fit with the app workflow.

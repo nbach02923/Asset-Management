@@ -5,14 +5,14 @@ import useDashBoardState from "./useDashBoardState";
 import DataTable from "../../components/dataTable";
 
 const DashBoard = () => {
-	const { assetData, assetTotal, data, tableHeader, total, currentPage, setCurrentPage } = useDashBoardState();
+	const { assetData, assetTotal, data, customHeaders, total, currentPage, setCurrentPage } = useDashBoardState();
 	return (
 		<Container>
 			<Box sx={{ display: "flex", justifyContent: "space-between", mt: 1 }}>
 				<Box sx={{ width: "700px" }}>
 					<DataTable
 						title="Recent Activity"
-						headers={tableHeader}
+						headers={customHeaders}
 						data={data}
 						shouldRenderSearchBar={false}
 						total={total}
@@ -34,7 +34,7 @@ const DashBoard = () => {
 					<Box sx={{ width: "100%" }}>
 						<Typography variant="h6">&nbsp;&nbsp;Asset count by status</Typography>
 					</Box>
-					<Box sx={{ display: "flex", justifyContent: "center", alignItems: "center"}}>
+					<Box sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
 						<VictoryContainer width={400} height={400}>
 							<VictoryPie
 								standalone={false}

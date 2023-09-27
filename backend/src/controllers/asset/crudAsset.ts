@@ -39,7 +39,17 @@ async function getAll(req: Request, res: Response, next: NextFunction) {
 			where: assetQuery,
 			take: limit,
 			skip: offset,
-			select: ["id", "name", "type", "status", "status", "description", "serial", "categoryAssetId"],
+			select: [
+				"id",
+				"name",
+				"type",
+				"status",
+				"status",
+				"description",
+				"serial",
+				"categoryAssetId",
+				"picturePath",
+			],
 		});
 		if (req.query.id && asset.length === 0) {
 			return res.status(404).json({ message: "Asset does not exist" });
