@@ -1,5 +1,10 @@
+## 29/09/2023
+* Finish the basic function for the web app. If there is new idea pop up will have a new change in the future.
+* Email will be deprecated for now. there is no resource for SMTP, message broker
+
 ## 27/09/2023
-*Only sort function left to finish the alpha version of the project
+* Only sort function left to finish the alpha version of the project
+
 ## 24/09/2023
 * Almost finish the project. finish the upload picture for asset left
 * Front end will not have a huge search bar on nav bar anymore. does not fit with the app workflow.

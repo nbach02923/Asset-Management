@@ -42,6 +42,8 @@ const useAssetState = () => {
 	const [currentPage, setCurrentPage] = useState(0);
 	const [openUpload, setOpenUpload] = useState(false);
 	const [selectedFile, setSelectedFile] = useState(null);
+	const [selectedValue, setSelectedValue] = useState("All");
+	const filterCheckBox = ["All", "Ready to Deploy", "Deployed", "Error"];
 	const customHeaders = ["Asset Name", "Asset Picture", "Serial", "Category", "Status", "Allocation"];
 	const handleCheckIn = useCallback(
 		(row) => {
@@ -65,6 +67,9 @@ const useAssetState = () => {
 		const querys = {
 			offset: 15 * currentPage,
 		};
+		if (selectedValue !== "All") {
+			querys.status = selectedValue;
+		}
 		Promise.all([API.getAPI("/asset", querys), API.getAPI("/categoryAsset", { limit: 100 })]).then(
 			([assetResponse, categoryResponse]) => {
 				const assetData = assetResponse.data;
@@ -129,7 +134,7 @@ const useAssetState = () => {
 				setData(customData);
 			}
 		);
-	}, [updateData, handleCheckIn, currentPage, decoded.role]);
+	}, [updateData, handleCheckIn, currentPage, decoded.role, selectedValue]);
 	useEffect(() => {
 		if (!open) {
 			setSelectedName("");
@@ -368,6 +373,9 @@ const useAssetState = () => {
 		handleUploadClose,
 		selectedFile,
 		handleFileChange,
+		selectedValue,
+		setSelectedValue,
+		filterCheckBox,
 	};
 };
 export default useAssetState;

@@ -15,6 +15,9 @@ import {
 	Typography,
 	IconButton,
 	PaginationItem,
+	FormGroup,
+	FormControlLabel,
+	Checkbox,
 } from "@mui/material";
 import {
 	AddCircleOutline as AddCircleOutlineIcon,
@@ -45,6 +48,9 @@ const DataTable = ({
 	setCurrentPage,
 	shouldRenderActionsColumn = true,
 	shouldRenderSearchBar = true,
+	filterCheckBox = [],
+	selectedValue,
+	setSelectedValue,
 }) => {
 	const [searchTerm, setSearchTerm] = useState("");
 	const [filteredData, setFilteredData] = useState(data);
@@ -83,22 +89,39 @@ const DataTable = ({
 					alignItems: "center",
 					justifyItems: "center",
 				}}>
-				{shouldRenderSearchBar && (
-					<TextField
-						label="Search Item"
-						value={searchTerm}
-						onChange={handleSearch}
-						sx={{ marginBottom: "5px", width: "300px" }}
-						size="small"
-						InputProps={{
-							startAdornment: (
-								<InputAdornment position="start">
-									<SearchIcon />
-								</InputAdornment>
-							),
-						}}
-					/>
-				)}
+				<Box sx={{ display: "flex", flexDirection: "row", justifyContent: "center", alignItems: "center" }}>
+					{shouldRenderSearchBar && (
+						<TextField
+							label="Search Item"
+							value={searchTerm}
+							onChange={handleSearch}
+							sx={{ marginBottom: "5px", width: "300px" }}
+							size="small"
+							InputProps={{
+								startAdornment: (
+									<InputAdornment position="start">
+										<SearchIcon />
+									</InputAdornment>
+								),
+							}}
+						/>
+					)}
+					<FormGroup row>
+						{filterCheckBox.map((item, index) => (
+							<FormControlLabel
+								control={
+									<Checkbox
+										checked={selectedValue === item}
+										onChange={() => setSelectedValue(item)}
+									/>
+								}
+								label={item}
+								key={index}
+								sx={{ ml: 2 }}
+							/>
+						))}
+					</FormGroup>
+				</Box>
 				{handleActionOnClick && handleActionOnClick.addNew && (
 					<Button
 						variant="contained"

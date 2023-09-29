@@ -37,6 +37,9 @@ const Asset = () => {
 		handleUploadClose,
 		selectedFile,
 		handleFileChange,
+		setSelectedValue,
+		selectedValue,
+		filterCheckBox,
 	} = useAssetState();
 	return (
 		<Container>
@@ -56,6 +59,9 @@ const Asset = () => {
 				total={total}
 				currentPage={currentPage}
 				setCurrentPage={setCurrentPage}
+				filterCheckBox={filterCheckBox}
+				selectedValue={selectedValue}
+				setSelectedValue={setSelectedValue}
 			/>
 			<ModalComponent
 				open={open}
